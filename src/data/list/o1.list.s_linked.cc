@@ -32,31 +32,42 @@
  */
 
 #include "o1.list.s_linked.hh"
+#include "../../o1.debug.hh"
+#include "../../o1.logging.hh"
 
 using o1::list::s_linked;
 using node = o1::list::s_linked::node;
 
-node::node(node&& that) noexcept {
-	_next = that._next;
-	that._next = nullptr;
-}
+o1::list::s_linked::s_linked(s_linked&& that) noexcept {
+	_head._next = that._head._next;
+	that._head._next = nullptr;
 
-o1::list::s_linked::s_linked(s_linked&& that) noexcept:
-	_head(std::move(that._head)) {
 	that._tail = &that._head;
 	_tail = &_head;
 }
 
 void
 s_linked::push_back(node* node) {
-	// TODO check node is not empty
+	if (o1::flags::extended_checks()) {
+		o1::xassert(
+			node->_next == nullptr,
+			"o1::list::s_linked::push_back: node to push must be empty"
+		);
+	}
+
 	_tail->_next = node;
 	_tail = node;
 }
 
 void
 s_linked::push_front(node* node) {
-	// TODO check _next is nullptr
+	if (o1::flags::extended_checks()) {
+		o1::xassert(
+			node->_next == nullptr,
+			"o1::list::s_linked::push_front: node to push must be empty"
+		);
+	}
+
 	s_linked::node* tmp = _head._next;
 	_head._next = node;
 	node->_next = tmp;

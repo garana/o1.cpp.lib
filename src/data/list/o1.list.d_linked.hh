@@ -110,12 +110,12 @@ namespace o1 {
 				/**
 				 * @return if this node is the only one in the list.
 				 */
-				bool empty() { return _next == this; } // TODO garana@ extended checks: _next == _prev
+				bool empty();
 
 				/**
 				 * @return if this node is the only one in the list.
 				 */
-				bool empty() const { return _next == this; } // TODO garana@ extended checks: _next == _prev
+				bool empty() const;
 
 			};
 

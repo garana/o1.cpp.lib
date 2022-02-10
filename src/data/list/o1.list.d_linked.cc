@@ -32,6 +32,8 @@
  */
 
 #include "o1.list.d_linked.hh"
+#include "../../o1.debug.hh"
+#include "../../o1.logging.hh"
 
 using o1::list::d_linked;
 using node = d_linked::node;
@@ -66,7 +68,13 @@ node::detach() {
 
 void
 node::push_back(node* node) {
-	// node->empty(); // TODO garana@ extended checks!
+	if (o1::flags::extended_checks()) {
+		o1::xassert(
+			node->empty(),
+			"o1.list.d_linked::node::push_back called with non-empty node"
+		);
+	}
+
 	node->_prev = _prev;
 	_prev->_next = node;
 	_prev = node;
@@ -77,6 +85,26 @@ node::push_back(node* node) {
 void
 node::push_front(node* next) {
 	next->push_back(this);
+}
+
+bool o1::list::d_linked::node::empty() {
+	if (o1::flags::extended_checks()) {
+		o1::xassert(
+			(_next == this) == (_next == _prev),
+			"o1::list::d_linked::node::empty: inconsistency in node"
+		);
+	}
+	return _next == this;
+}
+
+bool o1::list::d_linked::node::empty() const {
+	if (o1::flags::extended_checks()) {
+		o1::xassert(
+			(_next == this) == (_next == _prev),
+			"o1::list::d_linked::node::empty: inconsistency in node"
+		);
+	}
+	return _next == this;
 }
 
 
