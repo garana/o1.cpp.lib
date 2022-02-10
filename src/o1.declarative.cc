@@ -31,5 +31,5 @@
  *
  */
 
-#define o1CppLib_VERSION_MAJOR @o1CppLib_VERSION_MAJOR@
-#define o1CppLib_VERSION_MINOR @o1CppLib_VERSION_MINOR@
+
+#include "o1.declarative.hh"

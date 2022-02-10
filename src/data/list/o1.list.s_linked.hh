@@ -31,8 +31,8 @@
  *
  */
 
-#ifndef O1_LIB_DLL_HH
-#define O1_LIB_DLL_HH
+#ifndef O1_LIB_SLL_HH
+#define O1_LIB_SLL_HH
 
 #include <cstddef>
 #include <algorithm>
@@ -76,7 +76,7 @@ namespace o1 {
 
 				node(const node& that) = delete;
 
-				node(node&& that) noexcept;
+				node(node&& that) = delete;
 
 				[[nodiscard]] const node* next() const { return _next; }
 
@@ -140,4 +140,4 @@ namespace o1 {
 	}
 }
 
-#endif //O1_LIB_DLL_HH
+#endif //O1_LIB_SLL_HH
