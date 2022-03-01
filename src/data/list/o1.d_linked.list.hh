@@ -31,21 +31,27 @@
  *
  */
 
-#ifndef O1_LIB_DLL_HH
-#define O1_LIB_DLL_HH
+#ifndef O1CPPLIB_O1_D_LINKED_LIST_HH
+#define O1CPPLIB_O1_D_LINKED_LIST_HH
 
 #include <cstddef>
 #include <algorithm>
+#include <utility>
+#include <memory>
+#include "../node/o1.d_linked.node.hh"
 
 namespace o1 {
 
-	namespace list {
+	namespace d_linked {
 
 		/**
 		 * Double (circular) Linked List.
 		 *
 		 * If a node gets destroyed (it's destructor called) before the list itself does,
 		 * the list remains consistent, as each node detaches it self from the list.
+		 * This means that if the list node is a member of the contained element,
+		 * when the latter gets destroyed, it gets detached from the list,
+		 * hence it keeps consistency.
 		 *
 		 * These operations are supported (all O(1)):
 		 * - push_back (push, append)
@@ -54,147 +60,138 @@ namespace o1 {
 		 * - pop_front (shift)
 		 * - Any random node detached.
 		 *
-		 * Instead of keeping a list of nodes with a pointer to the data, the data structure
-		 * should include the d_linked::node.
-		 *
-		 * Note that the d_linked::node next() and prev() would point to the node member, not the
-		 * node data structure.
 		 */
-		class d_linked {
-			
+		class list {
+
 		public:
-			
-			class node {
-				node* _next = nullptr;
-				node* _prev = nullptr;
+			using node = o1::d_linked::node;
 
+			class EventHandlers {
 			public:
-				node() {
-					_prev = _next = this;
-				}
-
-				node(const node& that) = delete;
-
-				/**
-				 * Move constructor.
-				 * Replace @param that with *this on the list.
-				 * @param that
-				 */
-				node(node&& that) noexcept;
-
-				/**
-				 * Detach this node on destructor.
-				 */
-				~node() { detach(); }
-
-				void detach();
-
-				[[nodiscard]] const node* next() const { return _next; }
-
-				node* next() { return _next; }
-
-				[[nodiscard]] const node* prev() const { return _prev; }
-
-				node* prev() { return _prev; }
-
-				/**
-				 * Inserts @param next after *this.
-				 */
-				void push_back(node* next);
-
-				/**
-				 * Inserts @param next before *this.
-				 */
-				void push_front(node* next);
-
-				/**
-				 * @return if this node is the only one in the list.
-				 */
-				bool empty();
-
-				/**
-				 * @return if this node is the only one in the list.
-				 */
-				bool empty() const;
-
+				virtual void onAttach(node*, list*) = 0;
+				virtual void onDetach(node*, list*) = 0;
 			};
 
 		private:
 
-			node _node;
+			class NodeEventHandlers: public node::EventHandlers {
+				list* _list{nullptr};
+				//friend list::list(list&& that);
+				friend list;
+			public:
+				explicit NodeEventHandlers(list* list): _list(list) { }
+
+				void setList(list* newList) {
+					_list = newList;
+				}
+
+				void onAttach(node* node) override {
+					_list->_numElements++;
+					if (_list->_listEventHandlers)
+						_list->_listEventHandlers->onAttach(node, _list);
+				}
+
+				void onDetach(node* node) override {
+					_list->_numElements--;
+					if (_list->_listEventHandlers)
+						_list->_listEventHandlers->onDetach(node, _list);
+				}
+			};
+
+			size_t _numElements{0};
+			EventHandlers* _listEventHandlers{nullptr};
+			std::shared_ptr<NodeEventHandlers> _nodeEventHandlers{
+				std::make_shared<NodeEventHandlers>(this)
+			};
+			node _node{_nodeEventHandlers};
+
+			void _shiftNodeEventHandlersList(list* list) {
+				_nodeEventHandlers->setList(list);
+				_nodeEventHandlers = std::make_shared<NodeEventHandlers>(this);
+				_node.eventHandlers(_nodeEventHandlers);
+			}
 
 		public:
-			d_linked() = default;
+			list() = default;
 
-			d_linked(const d_linked& that) = delete;
+			explicit list(EventHandlers* handlers);
 
-			d_linked(d_linked&& that) noexcept:
-				_node(std::move(that._node)) {
-			}
+			list(const list& that) = delete;
+
+			list(list&& that) noexcept;
 
 			/**
 			 * Upon destruction, entries are NOT deleted.
 			 * They'll form a  double linked list on their own.
 			 */
-			~d_linked() = default;
+			~list() = default;
 
 			/**
 			 * First node of the list.
 			 * @return the first node of the list, or finish() if it's empty.
 			 */
-			[[nodiscard]] const node* start() const { return _node.next(); }
+			[[nodiscard]] inline const node* start() const { return _node.next(); }
 
 			/**
 			 * First node of the list.
 			 * @return the first node of the list, or finish() if it's empty.
 			 */
-			node* start() { return _node.next(); }
+			inline node* start() { return _node.next(); }
 
 			/**
 			 * Last element of the list.
 			 * @return the last node of the list, or finish() if it's empty.
 			 */
-			[[nodiscard]] const node* r_start() const { return _node.prev(); }
+			[[nodiscard]] inline const node* r_start() const { return _node.prev(); }
 
 			/**
 			 * Last element of the list.
 			 * @return the last node of the list, or finish() if it's empty.
 			 */
-			node* r_start() { return _node.prev(); }
+			[[nodiscard]] inline node* r_start() { return _node.prev(); }
 
 			/**
 			 * When a node equals to the returned value, list traversal has ended.
 			 * @return a node that's not in the list, is the node of the list itself.
 			 */
-			[[nodiscard]] const node* finish() const { return &_node; }
+			[[nodiscard]] inline const node* finish() const { return &_node; }
 
 			/**
 			 * When a node equals to the returned value, list traversal has ended.
 			 * @return a node that's not in the list, is the node of the list itself.
 			 */
-			node* finish() { return &_node; }
+			[[nodiscard]] inline node* finish() { return &_node; }
 
 			/**
 			 * @return true iff the list is empty.
 			 */
-			[[nodiscard]] bool empty() const { return _node.empty(); }
+			[[nodiscard]] inline bool empty() const { return _node.empty(); }
 
 			/**
 			 * @return true iff the list is empty.
 			 */
-			bool empty() { return _node.empty(); }
+			[[nodiscard]] inline bool empty() { return _node.empty(); }
+
+			/**
+			 * @return true iff the list is empty.
+			 */
+			[[nodiscard]] inline size_t size() const { return _numElements; }
 
 			/**
 			 * Adds the @param node to the end of the list.
 			 * @param node node inserted at the end of the list.
 			 */
-			void push_back(node* node);
+			inline void push_back(node* node) {
+				_node.push_back(node);
+			}
 
 			/**
 			 * Inserts @param node at the beginning of the list.
 			 * @param node node inserted at the beginning of the list.
 			 */
-			void push_front(node* node);
+			inline void push_front(node* node) {
+				_node.push_front(node);
+			}
 
 			/**
 			 * Removes (and returns) the last node of the list.
@@ -211,6 +208,7 @@ namespace o1 {
 		};
 
 	}
+
 }
 
-#endif //O1_LIB_DLL_HH
+#endif //O1CPPLIB_O1_D_LINKED_LIST_HH

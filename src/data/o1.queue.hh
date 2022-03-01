@@ -34,6 +34,9 @@
 #ifndef O1CPPLIB_QUEUE_HH
 #define O1CPPLIB_QUEUE_HH
 
-#include "queue/o1.queue.hh"
+#include "queue/o1.s_linked.queue.hh"
+#include "queue/o1.d_linked.queue.hh"
+#include "queue/o1.s_linked.queue_t.hh"
+#include "queue/o1.d_linked.queue_t.hh"
 
 #endif //O1CPPLIB_QUEUE_HH

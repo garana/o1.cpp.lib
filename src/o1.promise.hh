@@ -201,7 +201,6 @@ namespace o1 {
 
 		}
 
-
 		void resolve(const C& result) {
 			_status = status_t::stResolved;
 			_result = result;

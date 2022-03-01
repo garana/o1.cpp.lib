@@ -31,28 +31,43 @@
  *
  */
 
-#include "o1.stack.hh"
 
-o1::stack::stack(o1::stack&& that) noexcept:
-	d_linked(std::move(that)) {
+#ifndef O1CPPLIB_O1_ITERATOR_REF_HH
+#define O1CPPLIB_O1_ITERATOR_REF_HH
+
+#include <type_traits>
+
+namespace o1 {
+
+	template <typename Node, typename Ref>
+	class iterator_ref {
+	protected:
+		Node* _node{nullptr};
+
+	public:
+		explicit iterator_ref(Node* node): _node(node) {}
+
+		iterator_ref(const iterator_ref<Node, Ref>& that) = default;
+
+		iterator_ref(iterator_ref<Node, Ref>&& that) noexcept :
+			_node(that._node) {
+			that._node = nullptr;
+		}
+
+		[[nodiscard]] Ref* operator*() {
+			return _node == nullptr ? nullptr : _node->ref();
+		}
+
+		[[nodiscard]] inline const Ref* operator*() const {
+			return _node == nullptr ? nullptr : _node->ref();
+		}
+
+		bool operator != (const iterator_ref<Node,Ref>& that) const {
+			return _node != that._node;
+		}
+
+	};
+
 }
 
-void o1::stack::push(o1::stack::node* node) {
-	d_linked::push_back(static_cast<list::d_linked::node*>(node));
-}
-
-o1::stack::node* o1::stack::pop() {
-	return reinterpret_cast<node*>(d_linked::pop_back());
-}
-
-o1::stack::node* o1::stack::peek() {
-	return empty() ?
-		   nullptr :
-		   reinterpret_cast<node*>(list::d_linked::r_start());
-}
-
-const o1::stack::node* o1::stack::peek() const {
-	return empty() ?
-		   nullptr :
-		   reinterpret_cast<const node*>(list::d_linked::r_start());
-}
+#endif //O1CPPLIB_O1_ITERATOR_REF_HH

@@ -32,49 +32,43 @@
  */
 
 
-#ifndef O1CPPLIB_O1_CHANGELOG_HH
-#define O1CPPLIB_O1_CHANGELOG_HH
-
-#include <cstddef>
-#include "data/list/o1.d_linked.list_t.hh"
+#ifndef O1CPPLIB_O1_S_LINKED_NODE_HH
+#define O1CPPLIB_O1_S_LINKED_NODE_HH
 
 namespace o1 {
 
-	/**
-	 * Keep modified objects in a list, being able to sweep through
-	 * them later.
-	 * @tparam T type of objects to track.
-	 */
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	class changelog {
+	namespace s_linked {
 
-	public:
-		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
+		// TODO documentation
+		class node {
+			node* _next{nullptr};
 
-		list_t& modifiedItems() {
-			static list_t _modifiedItems(getNodeFn);
-			return _modifiedItems;
-		}
+		public:
+			node() = default;
 
-		void modified(T* obj) {
-			auto _node = getNodeFn(obj);
+			node(const node& that) = delete;
 
-			// if it's already modified, do nothing.
-			if (!_node->empty())
-				return;
+			node(node&& that) = delete;
 
-			modifiedItems().push_back(obj);
-		}
+			virtual ~node() = default;
 
-	};
+			void move(node& that);
 
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	changelog<T, getNodeFn>& getChangeLog() {
-		static changelog<T, getNodeFn> _changelog;
-		return _changelog;
+			/**
+			 * Assigns new_value to _next, returning it's previous value.
+			 * @param new_value assigned to _next.
+			 * @return previous _next value.
+			 */
+			node* next(node* new_value);
+
+			[[nodiscard]] inline const node* next() const { return _next; }
+
+			[[nodiscard]] inline node* next() { return _next; }
+
+		};
+
 	}
 
 }
 
-#endif //O1CPPLIB_O1_CHANGELOG_HH
+#endif //O1CPPLIB_O1_S_LINKED_NODE_HH

@@ -43,7 +43,7 @@
 namespace o1 {
 
 	/**
-	 * flag set, up to 128 flag values
+	 * flag set, up to 128 flag values (uint128_t)
 	 * @tparam T enum type
 	 * @tparam S unsigned integral type, to store the flags.
 	 */
@@ -160,6 +160,7 @@ namespace o1 {
 		}
 
 		bool isSet(T flag) {
+			_maybe_resize(flag);
 			return _flags[index(flag)];
 		}
 

@@ -31,90 +31,69 @@
  *
  */
 
-#ifndef O1CPPLIB_O1_LIST_D_LINKED_T_HH
-#define O1CPPLIB_O1_LIST_D_LINKED_T_HH
+#ifndef O1CPPLIB_O1_D_LINKED_LIST_T_HH
+#define O1CPPLIB_O1_D_LINKED_LIST_T_HH
 
-#include "o1.list.d_linked.hh"
-#include "../o1.member.hh"
+#include "./o1.d_linked.list.hh"
+#include "../node/o1.d_linked.node_t.hh"
+#include "../iterator/o1.forward_iterator_ref.hh"
 
 namespace o1 {
 
-	namespace list {
+	namespace d_linked {
 
-		template <typename Node, std::ptrdiff_t node_offset>
-		class d_linked_t: protected o1::list::d_linked {
+		template<typename T>
+		class list_t : protected o1::d_linked::list {
 
 		public:
-			class node: protected o1::list::d_linked::node {
-			public:
-				friend class d_linked_t<Node, node_offset>;
-				node* next() { return static_cast<node*>(d_linked::node::next()); }
-			};
+			using getNodeFn = typename o1::d_linked::node_t<T>::getNodeFn;
+			using node = o1::d_linked::node_t<T>;
 
-		protected:
-			using member = o1::member<Node, d_linked_t::node, node_offset>;
+		private:
+			getNodeFn getNode{nullptr};
 
 		public:
 
-			class forward_iterator {
-			public:
-				friend class d_linked_t<Node, node_offset>;
+			list_t() = delete;
 
-			private:
-				d_linked_t::node* _node = nullptr;
+			explicit list_t(getNodeFn _getNode) : getNode(_getNode) {}
 
-			protected:
-				explicit forward_iterator(d_linked_t::node* node): _node(node) { }
+			list_t(const list_t& that) = delete;
 
-			public:
-				forward_iterator(const forward_iterator& that): _node(that._node) { }
-
-				forward_iterator(forward_iterator&& that) noexcept : _node(std::move(that._node)) { }
-
-				Node& operator*() { return *member::member2node(_node); }
-
-				bool operator != (const forward_iterator& that) const {
-					return _node != that._node;
-				}
-
-				// prefix
-				forward_iterator operator++() {
-					if (_node != nullptr)
-						_node = _node->next();
-					return forward_iterator(_node);
-				}
-
-			};
-
-		public:
-
-			d_linked_t() = default;
-
-			d_linked_t(const d_linked_t& that) = delete;
-
-			d_linked_t(d_linked_t&& that) noexcept:
-				d_linked(std::move(that)) {
+			list_t(list_t&& that) noexcept:
+				o1::d_linked::list(std::move(that)),
+				getNode(that.getNode) {
+				that.getNode = nullptr;
 			}
 
-			~d_linked_t() = default;
+			~list_t() = default;
 
-			forward_iterator begin() {
-				return forward_iterator(static_cast<node*>(d_linked::start()));
+			o1::forward_iterator_ref<node, T> begin() {
+				return o1::forward_iterator_ref<node, T>(
+					static_cast<node_t<T>*>(
+						list::start()
+					)
+				);
 			}
 
-			forward_iterator end() {
-				return forward_iterator(static_cast<node*>(d_linked::finish()));
+			o1::forward_iterator_ref<node, T> end() {
+				return o1::forward_iterator_ref<node, T>(
+					static_cast<node_t<T>*>(
+						list::finish()
+					)
+				);
 			}
 
-			using d_linked::empty;
+			using d_linked::list::empty;
+			using d_linked::list::size;
 
 			/**
 			 * "Alias" of d_linked::push_back(node).
 			 * Adds the element to the end of the list.
 			 * @param node gets added at the end of the list.
 			 */
-			void push(Node* node) {
-				d_linked::push_back(member::node2member(node));
+			void push_back(T* datum) {
+				d_linked::list::push_back(getNode(datum));
 			}
 
 			/**
@@ -122,8 +101,8 @@ namespace o1 {
 			 * Adds the element to the head of the list.
 			 * @param node gets added at the beginning of the list.
 			 */
-			void insert(Node* node) {
-				d_linked::push_front(member::node2member(node));
+			void push_front(T* datum) {
+				d_linked::list::push_front(getNode(datum));
 			}
 
 			/**
@@ -131,8 +110,10 @@ namespace o1 {
 			 * Removes (and returns) the last element of the list.
 			 * @return the removed element from the end of the list; or nullptr if it's empty.
 			 */
-			Node* pop() {
-				return member::member2node(static_cast<d_linked_t::node*>(d_linked::pop_back()));
+			T* pop_back() {
+				return node_t<T>::ref(
+					static_cast<node_t<T>*>(d_linked::list::pop_back())
+				);
 			}
 
 			/**
@@ -140,8 +121,10 @@ namespace o1 {
 			 * Removes (and returns) the first element of the list.
 			 * @return the removed element from the head of the list, or nullptr if it's empty.
 			 */
-			Node* shift() {
-				return member::member2node(static_cast<d_linked_t::node*>(d_linked::pop_front()));
+			T* pop_front() {
+				return node_t<T>::ref(
+					static_cast<node_t<T>*>(d_linked::list::pop_front())
+				);
 			}
 
 		};
@@ -150,4 +133,4 @@ namespace o1 {
 
 }
 
-#endif //O1CPPLIB_O1_LIST_D_LINKED_T_HH
+#endif //O1CPPLIB_O1_D_LINKED_LIST_T_HH

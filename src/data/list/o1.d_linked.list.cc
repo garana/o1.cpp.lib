@@ -31,95 +31,27 @@
  *
  */
 
-#include "o1.list.d_linked.hh"
-#include "../../o1.debug.hh"
-#include "../../o1.logging.hh"
+#include "o1.d_linked.list.hh"
 
-using o1::list::d_linked;
-using node = d_linked::node;
+using o1::d_linked::list;
+using node = o1::d_linked::list::node;
 
-node::node(class node&& that) noexcept:
-	_next(that._next),
-	_prev(that._prev) {
 
-	if (that._prev == &that) {
-		_prev = this;
-	} else {
-		that._prev->_next = this;
-	}
-
-	if (that._next == &that) {
-		_next = this;
-	} else {
-		that._next->_prev = this;
-	}
-
-	that._next = that._prev = &that;
+list::list(list::EventHandlers* handlers):
+	_listEventHandlers(handlers) {
 }
 
-
-void
-node::detach() {
-	_next->_prev = _prev;
-	_prev->_next = _next;
-	_prev = _next = this;
+list::list(list&& that) noexcept:
+	_numElements(that._numElements),
+	_listEventHandlers(that._listEventHandlers),
+	_node(std::move(that._node)) {
+	that._numElements = 0;
+	_node.eventHandlers(_nodeEventHandlers);
+	that._shiftNodeEventHandlersList(this);
 }
-
-
-void
-node::push_back(node* node) {
-	if (o1::flags::extended_checks()) {
-		o1::xassert(
-			node->empty(),
-			"o1.list.d_linked::node::push_back called with non-empty node"
-		);
-	}
-
-	node->_prev = _prev;
-	_prev->_next = node;
-	_prev = node;
-	node->_next = this;
-}
-
-
-void
-node::push_front(node* next) {
-	next->push_back(this);
-}
-
-bool o1::list::d_linked::node::empty() {
-	if (o1::flags::extended_checks()) {
-		o1::xassert(
-			(_next == this) == (_next == _prev),
-			"o1::list::d_linked::node::empty: inconsistency in node"
-		);
-	}
-	return _next == this;
-}
-
-bool o1::list::d_linked::node::empty() const {
-	if (o1::flags::extended_checks()) {
-		o1::xassert(
-			(_next == this) == (_next == _prev),
-			"o1::list::d_linked::node::empty: inconsistency in node"
-		);
-	}
-	return _next == this;
-}
-
-
-void
-d_linked::push_back(node* node) {
-	_node.push_back(node);
-}
-
-void d_linked::push_front(node* node) {
-	_node.push_front(node);
-}
-
 
 node*
-d_linked::pop_front() {
+list::pop_front() {
 	node* next = _node.next();
 
 	if (next != &_node) {
@@ -131,7 +63,7 @@ d_linked::pop_front() {
 }
 
 
-node* d_linked::pop_back() {
+node* list::pop_back() {
 	node* prev = _node.prev();
 
 	if (prev != &_node) {
@@ -141,3 +73,4 @@ node* d_linked::pop_back() {
 
 	return nullptr;
 }
+

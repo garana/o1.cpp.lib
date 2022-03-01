@@ -34,8 +34,9 @@
 #ifndef O1CPPLIB_O1_LIST_HH
 #define O1CPPLIB_O1_LIST_HH
 
-#include "list/o1.list.d_linked.hh"
-#include "list/o1.list.d_linked_t.hh"
-#include "list/o1.list.s_linked.hh"
+#include "list/o1.s_linked.list.hh"
+#include "list/o1.d_linked.list.hh"
+#include "list/o1.s_linked.list_t.hh"
+#include "list/o1.d_linked.list_t.hh"
 
 #endif //O1CPPLIB_O1_LIST_HH

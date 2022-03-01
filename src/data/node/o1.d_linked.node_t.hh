@@ -31,61 +31,34 @@
  *
  */
 
-#ifndef O1CPPLIB_O1_QUEUE_HH
-#define O1CPPLIB_O1_QUEUE_HH
 
-#include "../list/o1.list.d_linked.hh"
+#ifndef O1CPPLIB_O1_D_LINKED_NODE_T_HH
+#define O1CPPLIB_O1_D_LINKED_NODE_T_HH
+
+#include "./o1.node_t.hh"
+#include "./o1.d_linked.node.hh"
 
 namespace o1 {
 
-	class queue: protected o1::list::d_linked {
+	namespace d_linked {
 
-	public:
-		class node: protected o1::list::d_linked::node {
+		// TODO documentation
+		template <typename T>
+		class node_t: public o1::node_t<T>, public o1::d_linked::node {
 		public:
-			friend class queue;
+			node_t() = delete;
+			explicit node_t(T* ref): o1::node_t<T>(ref) { }
+			~node_t() = default;
+
+			/**
+			 * Given the datum object, return the o1::d_linked::node_t<T>.
+			 */
+			using getNodeFn = node_t<T>* (*)(T* obj);
+
 		};
 
-		queue() = default;
-
-		queue(const queue& that) = delete;
-
-		queue(queue&& that) noexcept;
-
-		/**
-		 * Upon destruction, entries are NOT deleted.
-		 * They'll form a  double linked list on their own.
-		 */
-		~queue() = default;
-
-		using list::d_linked::empty;
-
-		/**
-		 * Push the @param node to the end of the queue.
-		 * @param node element to be pushed.
-		 */
-		void push(node* node);
-
-		/**
-		 * Removes the element from the head of the queue.
-		 * @return the element removed from the head queue, or nullptr if it's empty.
-		 */
-		node* pop();
-
-		/**
-		 * Returns the element at the head of the queue.
-		 * @return the element at the head of the queue, or nullptr if it's empty.
-		 */
-		node* peek();
-
-		/**
-		 * Returns the element at the tail of the queue.
-		 * @return the element at the tail of the queue, or nullptr if it's empty.
-		 */
-		const node* peek() const;
-
-	};
+	}
 
 }
 
-#endif //O1CPPLIB_O1_QUEUE_HH
+#endif //O1CPPLIB_O1_D_LINKED_NODE_T_HH

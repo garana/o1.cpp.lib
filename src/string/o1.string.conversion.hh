@@ -46,7 +46,7 @@ namespace o1 {
 	 * @param value Value to be converted.
 	 * @return string representation in base 10.
 	 */
-	template <typename T> std::string ntoa(T value); // TODO garana write UTs and convert to const T&
+	template <typename T> std::string ntoa(T value); // TODO write UTs
 	template <> std::string ntoa<int8_t>(int8_t value);
 	template <> std::string ntoa<int16_t>(int16_t value);
 	template <> std::string ntoa<int32_t>(int32_t value);

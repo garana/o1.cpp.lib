@@ -31,58 +31,44 @@
  *
  */
 
-#include "o1.list.s_linked.hh"
-#include "../../o1.debug.hh"
-#include "../../o1.logging.hh"
 
-using o1::list::s_linked;
-using node = o1::list::s_linked::node;
+#include <gtest/gtest.h>
+#include "o1.changelog.hh"
 
-o1::list::s_linked::s_linked(s_linked&& that) noexcept {
-	_head._next = that._head._next;
-	that._head._next = nullptr;
+namespace {
 
-	that._tail = &that._head;
-	_tail = &_head;
-}
+	struct Datum;
+	using node = o1::d_linked::list_t<Datum>::node;
 
-void
-s_linked::push_back(node* node) {
-	if (o1::flags::extended_checks()) {
-		o1::xassert(
-			node->_next == nullptr,
-			"o1::list::s_linked::push_back: node to push must be empty"
-		);
+	struct Datum {
+		node changelog_node{this};
+
+		static node* getNode(Datum* obj) {
+			return &obj->changelog_node;
+		}
+	};
+
+	TEST(o1_changelog, instantiate) {
+		o1::getChangeLog<Datum, Datum::getNode>();
 	}
 
-	_tail->_next = node;
-	_tail = node;
-}
+	TEST(o1_changelog, bookKeep) {
+		Datum obj;
 
-void
-s_linked::push_front(node* node) {
-	if (o1::flags::extended_checks()) {
-		o1::xassert(
-			node->_next == nullptr,
-			"o1::list::s_linked::push_front: node to push must be empty"
-		);
+		auto& changeLog = o1::getChangeLog<Datum, Datum::getNode>();
+
+		EXPECT_EQ(changeLog.modifiedItems().size(), 0);
+		o1::getChangeLog<Datum, Datum::getNode>().modified(&obj);
+		EXPECT_EQ(changeLog.modifiedItems().size(), 1);
+		o1::getChangeLog<Datum, Datum::getNode>().modified(&obj);
+		EXPECT_EQ(changeLog.modifiedItems().size(), 1);
+
+		auto* popped = changeLog.modifiedItems().pop_front();
+		EXPECT_EQ(popped, &obj);
+		EXPECT_EQ(changeLog.modifiedItems().size(), 0);
+		EXPECT_EQ(obj.changelog_node.empty(), true);
+		EXPECT_EQ(changeLog.modifiedItems().empty(), true);
+
 	}
 
-	s_linked::node* tmp = _head._next;
-	_head._next = node;
-	node->_next = tmp;
-}
-
-
-node*
-s_linked::pop_front() {
-	node* retVal = _head.next();
-
-	if (retVal != nullptr) {
-		_head._next = _head._next->_next;
-		return retVal;
-	}
-
-	_tail = &_head;
-	return nullptr;
 }

@@ -34,6 +34,9 @@
 #ifndef O1CPPLIB_STACK_HH
 #define O1CPPLIB_STACK_HH
 
-#include "stack/o1.stack.hh"
+#include "stack/o1.s_linked.stack.hh"
+#include "stack/o1.d_linked.stack.hh"
+#include "stack/o1.s_linked.stack_t.hh"
+#include "stack/o1.d_linked.stack_t.hh"
 
 #endif //O1CPPLIB_STACK_HH

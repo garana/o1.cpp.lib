@@ -31,44 +31,83 @@
  *
  */
 
-#ifndef O1CPPLIB_O1_MEMBER_HH
-#define O1CPPLIB_O1_MEMBER_HH
+#ifndef O1CPPLIB_O1_S_LINKED_STACK_HH
+#define O1CPPLIB_O1_S_LINKED_STACK_HH
 
-#include <cstddef>
-#include <type_traits>
+#include "../list/o1.s_linked.list.hh"
 
 namespace o1 {
 
-	template <typename Node, typename Member, std::ptrdiff_t node_offset>
-	class member {
-	public:
-		static_assert(std::is_standard_layout<Node>::value, "o1::member only works for std layout nodes");
+	namespace s_linked {
 
-		static Member* node2member(Node* pNode) {
-			return pNode == nullptr ?
-				   nullptr :
-				   (Member*)( (char*) pNode + node_offset );
-		}
+		/**
+		 * TODO sync doc w/ list
+		 * Non-Owning, simply linked stack.
+		 * Nodes can't detach themselves from the stack.
+		 */
+		class stack : protected o1::s_linked::list {
 
-		static const Member* node2member(const Node* pNode) {
-			return pNode == nullptr ?
-				   nullptr :
-				   (const Member*)( (char*) pNode + node_offset );
-		}
+		public:
 
-		static Node* member2node(Member* member) {
-			return member == nullptr ?
-				   nullptr :
-				   (Node*)( (char*) member - node_offset );
-		}
+			using node = o1::s_linked::node;
 
-		static const Node* member2node(const Member* member) {
-			return member == nullptr ?
-				   nullptr :
-				   (const Node*)( (char*) member - node_offset );
-		}
+			stack() = default;
 
-	};
+			stack(const stack& that) = delete;
+
+			stack(stack&& that) noexcept:
+				list(std::move(that)) {
+			}
+
+
+			/**
+			 * Upon destruction, entries are NOT deleted.
+			 * They'll form a  double linked list on their own.
+			 */
+			~stack() = default;
+
+			using o1::s_linked::list::empty;
+
+			/**
+			 * Push the arg to the stack.
+			 * @param node element to be pushed.
+			 */
+			inline void push(node* node) {
+				list::push_front(node);
+			}
+
+			/**
+			 * Removes the element from the top of the stack.
+			 * @return the element removed from the stack, or nullptr if it's empty.
+			 */
+			inline node* pop() {
+				return reinterpret_cast<node*>(list::pop_front());
+			}
+
+			/**
+			 * Returns the element at the top of the stack.
+			 * @return the element at the top of the stack, or nullptr if it's empty.
+			 */
+			inline node* peek() {
+				return empty() ?
+					   nullptr :
+					   reinterpret_cast<node*>(start());
+			}
+
+			/**
+			 * Returns the element at the top of the stack.
+			 * @return the element at the top of the stack, or nullptr if it's empty.
+			 */
+			const node* peek() const {
+				return empty() ?
+					   nullptr :
+					   reinterpret_cast<const node*>(start());
+			}
+
+		};
+
+	}
+
 }
 
-#endif //O1CPPLIB_O1_MEMBER_HH
+#endif //O1CPPLIB_O1_S_LINKED_STACK_HH

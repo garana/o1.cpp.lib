@@ -31,61 +31,45 @@
  *
  */
 
-#ifndef O1CPPLIB_O1_STACK_HH
-#define O1CPPLIB_O1_STACK_HH
 
-#include "../list/o1.list.d_linked.hh"
+#ifndef O1CPPLIB_O1_HASH_OPS_T_HH
+#define O1CPPLIB_O1_HASH_OPS_T_HH
+
+#include <cstdint>
+#include <cstddef>
+#include "../list/o1.d_linked.list_t.hh"
 
 namespace o1 {
 
-	class stack: protected o1::list::d_linked {
+	namespace hash {
 
-	public:
-		class node: protected o1::list::d_linked::node {
-		public:
-			friend class stack;
+		using hash_val = uint32_t;
+		template <typename Value>
+		using list_t = o1::d_linked::list_t<Value>;
+
+		template <typename Value>
+		using node = typename list_t<Value>::node;
+
+		hash_val hashValue(const void* buf, size_t length, hash_val previousValue = 0);
+
+		template <typename Key, typename Value>
+		struct ops {
+			typedef hash_val hashFn(const Key&);
+			hashFn* hashValue;
+
+			typedef const Key getKeyFn(const Value* value);
+			getKeyFn* getKey;
+
+			typedef typename o1::hash::list_t<Value>::node* getNodeFn(Value* value);
+			getNodeFn* getNode;
+
+			typedef bool equalFn(const Key& left, const Key& right);
+			equalFn* equal;
+
 		};
 
-		stack() = default;
-
-		stack(const stack& that) = delete;
-
-		stack(stack&& that) noexcept;
-
-		/**
-		 * Upon destruction, entries are NOT deleted.
-		 * They'll form a  double linked list on their own.
-		 */
-		~stack() = default;
-
-		using list::d_linked::empty;
-
-		/**
-		 * Push the arg to the stack.
-		 * @param node element to be pushed.
-		 */
-		void push(node* node);
-
-		/**
-		 * Removes the element from the top of the stack.
-		 * @return the element removed from the stack, or nullptr if it's empty.
-		 */
-		node* pop();
-
-		/**
-		 * Returns the element at the top of the stack.
-		 * @return the element at the top of the stack, or nullptr if it's empty.
-		 */
-		node* peek();
-
-		/**
-		 * Returns the element at the top of the stack.
-		 * @return the element at the top of the stack, or nullptr if it's empty.
-		 */
-		const node* peek() const;
-
-	};
+	}
 
 }
 
-#endif //O1CPPLIB_O1_STACK_HH
+#endif //O1CPPLIB_O1_HASH_OPS_T_HH

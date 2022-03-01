@@ -32,43 +32,43 @@
  */
 
 #include <gtest/gtest.h>
-#include "o1.queue.hh"
+#include "o1.s_linked.queue.hh"
 
 namespace {
 
 	TEST(o1_queue, Constructor) {
-		o1::queue queue;
+		o1::s_linked::queue queue;
 		EXPECT_TRUE(queue.empty());
 	}
 
 
 	TEST(o1_queue, MoveConstructorEmptyList) {
-		o1::queue src;
-		o1::queue dst(std::move(src));
+		o1::s_linked::queue src;
+		o1::s_linked::queue dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_TRUE(dst.empty());
 	}
 
 	TEST(o1_queue, MoveConstructorNonEmptyList) {
-		o1::queue src;
-		o1::queue::node node;
+		o1::s_linked::queue src;
+		o1::s_linked::queue::node node;
 		src.push(&node);
-		o1::queue dst(std::move(src));
+		o1::s_linked::queue dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_FALSE(dst.empty());
 	}
 
 	TEST(o1_queue, Push) {
-		o1::queue queue;
-		o1::queue::node node;
+		o1::s_linked::queue queue;
+		o1::s_linked::queue::node node;
 		queue.push(&node);
 		EXPECT_FALSE(queue.empty());
 	}
 
 
 	TEST(o1_queue, PopAfterPush) {
-		o1::queue queue;
-		o1::queue::node node;
+		o1::s_linked::queue queue;
+		o1::s_linked::queue::node node;
 		queue.push(&node);
 		EXPECT_FALSE(queue.empty());
 		auto front = queue.pop();
@@ -80,17 +80,17 @@ namespace {
 	}
 
 	TEST(o1_queue, Loop) {
-		o1::queue queue;
-		o1::queue::node nodes[10];
+		o1::s_linked::queue queue;
+		o1::s_linked::queue::node nodes[10];
 
 		for (auto& i: nodes) {
 			queue.push(&i);
 		}
 
 		int inode = 0;
-		while (o1::queue::node* node = queue.peek()) {
-			const o1::queue::node* const_node = const_cast<const o1::queue&>(queue).peek();
-			o1::queue::node* head = queue.pop();
+		while (o1::s_linked::queue::node* node = queue.peek()) {
+			const o1::s_linked::queue::node* const_node = const_cast<const o1::s_linked::queue&>(queue).peek();
+			o1::s_linked::queue::node* head = queue.pop();
 			EXPECT_EQ(node, const_node) << "inode=" << inode << " vs " << (node - &node[0]);
 			EXPECT_EQ(node, head) << "inode=" << inode << " vs " << (node - &node[0]);
 			EXPECT_EQ(node, &nodes[inode]) << "inode=" << inode << " vs " << (node - &node[0]);

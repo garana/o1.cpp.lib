@@ -32,49 +32,40 @@
  */
 
 
-#ifndef O1CPPLIB_O1_CHANGELOG_HH
-#define O1CPPLIB_O1_CHANGELOG_HH
+#ifndef O1CPPLIB_O1_FORWARD_ITERATOR_REF_HH
+#define O1CPPLIB_O1_FORWARD_ITERATOR_REF_HH
 
-#include <cstddef>
-#include "data/list/o1.d_linked.list_t.hh"
+#include <algorithm>
+#include "./o1.iterator_ref.hh"
 
 namespace o1 {
 
-	/**
-	 * Keep modified objects in a list, being able to sweep through
-	 * them later.
-	 * @tparam T type of objects to track.
-	 */
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	class changelog {
-
+	template <typename Node, typename Ref>
+	class forward_iterator_ref: public o1::iterator_ref<Node,Ref> {
 	public:
-		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
+		explicit forward_iterator_ref(Node* node): o1::iterator_ref<Node,Ref>(node) { }
 
-		list_t& modifiedItems() {
-			static list_t _modifiedItems(getNodeFn);
-			return _modifiedItems;
+		forward_iterator_ref(const forward_iterator_ref<Node,Ref>& that) = default;
+
+		forward_iterator_ref(forward_iterator_ref<Node,Ref>&& that) noexcept :
+			o1::iterator_ref<Node,Ref>(std::move(that)) {
 		}
 
-		void modified(T* obj) {
-			auto _node = getNodeFn(obj);
+		bool operator != (const forward_iterator_ref<Node,Ref>& that) const {
+			return
+				*static_cast<const o1::iterator_ref<Node,Ref>*>(this) !=
+				static_cast<const o1::iterator_ref<Node,Ref>&>(that);
+		}
 
-			// if it's already modified, do nothing.
-			if (!_node->empty())
-				return;
-
-			modifiedItems().push_back(obj);
+		// prefix
+		forward_iterator_ref<Node,Ref> operator++() {
+			if (this->_node != nullptr)
+				this->_node = static_cast<Node*>(this->_node->next());
+			return forward_iterator_ref<Node,Ref>(this->_node);
 		}
 
 	};
 
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	changelog<T, getNodeFn>& getChangeLog() {
-		static changelog<T, getNodeFn> _changelog;
-		return _changelog;
-	}
-
 }
 
-#endif //O1CPPLIB_O1_CHANGELOG_HH
+#endif //O1CPPLIB_O1_FORWARD_ITERATOR_REF_HH

@@ -35,8 +35,8 @@
 #ifndef O1CPPLIB_O1_RANGE_HH
 #define O1CPPLIB_O1_RANGE_HH
 
-#include "o1.property.hh"
-#include "o1.logging.hh"
+#include "./o1.property.hh"
+#include "./o1.logging.hh"
 
 namespace o1 {
 

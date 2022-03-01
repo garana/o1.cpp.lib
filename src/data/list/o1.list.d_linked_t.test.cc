@@ -32,25 +32,31 @@
  */
 
 #include <gtest/gtest.h>
-#include "o1.list.d_linked_t.hh"
+#include "o1.d_linked.list_t.hh"
 
 namespace {
 
 	struct MyNode {
 		int value{};
-		o1::list::d_linked::node node;
+		o1::d_linked::list_t<MyNode>::node node;
+
+		MyNode() : node(this) {};
 	};
 
-	using list_t = o1::list::d_linked_t<MyNode, offsetof(MyNode, node)>;
+	o1::d_linked::list_t<MyNode>::node* getNode(MyNode* datum) {
+		return &datum->node;
+	}
+
+	using list_t = o1::d_linked::list_t<MyNode>;
 
 	TEST(o1_d_linked_t, Constructor) {
-		list_t list;
+		list_t list(getNode);
 		EXPECT_TRUE(list.empty());
 	}
 
 
 	TEST(o1_d_linked_t, MoveConstructorEmptyList) {
-		list_t src;
+		list_t src(getNode);
 		list_t dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_TRUE(dst.empty());
@@ -58,9 +64,9 @@ namespace {
 
 
 	TEST(o1_d_linked_t, MoveConstructorNonEmptyList) {
-		list_t src;
+		list_t src(getNode);
 		MyNode node;
-		src.push(&node);
+		src.push_back(&node);
 		list_t dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_FALSE(dst.empty());
@@ -68,28 +74,28 @@ namespace {
 
 
 	TEST(o1_d_linked_t, PushBack) {
-		list_t list;
+		list_t list(getNode);
 		MyNode node;
-		list.push(&node);
+		list.push_back(&node);
 		EXPECT_FALSE(list.empty());
 	}
 
 
 	TEST(o1_d_linked_t, PushFront) {
-		list_t list;
+		list_t list(getNode);
 		MyNode node;
-		list.insert(&node);
+		list.push_front(&node);
 		EXPECT_FALSE(list.empty());
 	}
 
 	TEST(o1_d_linked_t, PopFrontAfterPushBack) {
-		list_t list;
+		list_t list(getNode);
 		MyNode node;
-		list.push(&node);
+		list.push_back(&node);
 		EXPECT_FALSE(list.empty());
-		auto front = list.shift();
+		auto front = list.pop_front();
 		EXPECT_TRUE(list.empty());
-		auto tail = list.pop();
+		auto tail = list.pop_back();
 		EXPECT_EQ(front, &node);
 		EXPECT_EQ(tail, nullptr);
 		EXPECT_TRUE(list.empty());
@@ -97,13 +103,13 @@ namespace {
 
 
 	TEST(o1_d_linked_t, PopBackAfterPushBack) {
-		list_t list;
+		list_t list(getNode);
 		MyNode node;
-		list.push(&node);
+		list.push_back(&node);
 		EXPECT_FALSE(list.empty());
-		auto tail = list.pop();
+		auto tail = list.pop_back();
 		EXPECT_TRUE(list.empty());
-		auto front = list.pop();
+		auto front = list.pop_back();
 		EXPECT_EQ(front, nullptr);
 		EXPECT_EQ(tail, &node);
 		EXPECT_TRUE(list.empty());
@@ -111,51 +117,50 @@ namespace {
 
 
 	TEST(o1_d_linked_t, PopFrontAfterPushFront) {
-		list_t list;
+		list_t list(getNode);
 		MyNode node;
-		list.insert(&node);
+		list.push_front(&node);
 		EXPECT_FALSE(list.empty());
-		auto front = list.shift();
+		auto front = list.pop_front();
 		EXPECT_TRUE(list.empty());
-		auto tail = list.pop();
+		auto tail = list.pop_back();
 		EXPECT_EQ(front, &node);
 		EXPECT_EQ(tail, nullptr);
 	}
 
 
 	TEST(o1_d_linked_t, PopBackAfterPushFront) {
-		list_t list;
+		list_t list(getNode);
 		MyNode node;
-		list.insert(&node);
+		list.push_front(&node);
 		EXPECT_FALSE(list.empty());
-		auto tail = list.pop();
+		auto tail = list.pop_back();
 		EXPECT_TRUE(list.empty());
-		auto front = list.shift();
+		auto front = list.pop_front();
 		EXPECT_EQ(front, nullptr);
 		EXPECT_EQ(tail, &node);
 	}
 
 
 	TEST(o1_d_linked_t, ForwardLoop) {
-		list_t list;
+		list_t list(getNode);
 		MyNode nodes[10];
 		int inode;
 
 		inode = 0;
 		for (auto& i: nodes) {
 			i.value = inode;
-			list.push(&i);
+			list.push_back(&i);
 			++inode;
 		}
 
 		inode = 0;
-		for (auto& i: list) {
-			EXPECT_EQ(i.value, nodes[inode].value);
+		for (auto i: list) {
+			EXPECT_EQ(i->value, nodes[inode].value);
 			EXPECT_LT(inode, 10) << "inode=" << inode;
 			++inode;
 		}
 
 	}
-
 
 }

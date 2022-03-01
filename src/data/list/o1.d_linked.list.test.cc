@@ -32,113 +32,206 @@
  */
 
 #include <gtest/gtest.h>
-#include "o1.list.d_linked.hh"
+#include "o1.d_linked.list.hh"
 
 namespace {
 
 	TEST(o1_d_linked, Constructor) {
-		o1::list::d_linked list;
+		o1::d_linked::list list;
 		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
 	}
 
 
 	TEST(o1_d_linked, MoveConstructorEmptyList) {
-		o1::list::d_linked src;
-		o1::list::d_linked dst(std::move(src));
+		o1::d_linked::list src;
+		o1::d_linked::list dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_TRUE(dst.empty());
+		EXPECT_EQ(src.size(), 0);
+		EXPECT_EQ(dst.size(), 0);
 	}
 
 
 	TEST(o1_d_linked, MoveConstructorNonEmptyList) {
-		o1::list::d_linked src;
-		o1::list::d_linked::node node;
+		o1::d_linked::list src;
+		o1::d_linked::node node;
 		src.push_back(&node);
-		o1::list::d_linked dst(std::move(src));
+		EXPECT_EQ(src.size(), 1);
+		o1::d_linked::list dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_FALSE(dst.empty());
+		EXPECT_EQ(src.size(), 0);
+		EXPECT_EQ(dst.size(), 1);
 	}
 
 
 	TEST(o1_d_linked, PushBack) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node node;
+		o1::d_linked::list list;
+		o1::d_linked::node node;
+		EXPECT_EQ(list.size(), 0);
 		list.push_back(&node);
 		EXPECT_FALSE(list.empty());
+		EXPECT_EQ(list.size(), 1);
 	}
 
 
 	TEST(o1_d_linked, PushFront) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node node;
+		o1::d_linked::list list;
+		o1::d_linked::node node;
+		EXPECT_EQ(list.size(), 0);
 		list.push_front(&node);
 		EXPECT_FALSE(list.empty());
+		EXPECT_EQ(list.size(), 1);
 	}
 
 	TEST(o1_d_linked, PopFrontAfterPushBack) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node node;
+		o1::d_linked::list list;
+		o1::d_linked::node node;
+
+		EXPECT_EQ(list.size(), 0);
+
 		list.push_back(&node);
+		EXPECT_EQ(list.size(), 1);
 		EXPECT_FALSE(list.empty());
+
 		auto front = list.pop_front();
+		EXPECT_EQ(list.size(), 0);
 		EXPECT_TRUE(list.empty());
+
 		auto tail = list.pop_back();
 		EXPECT_EQ(front, &node);
 		EXPECT_EQ(tail, nullptr);
 		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
 	}
 
 
 	TEST(o1_d_linked, PopBackAfterPushBack) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node node;
+		o1::d_linked::list list;
+		o1::d_linked::node node;
+
+		EXPECT_EQ(list.size(), 0);
 		list.push_back(&node);
 		EXPECT_FALSE(list.empty());
+		EXPECT_EQ(list.size(), 1);
+
 		auto tail = list.pop_back();
 		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
+
 		auto front = list.pop_back();
 		EXPECT_EQ(front, nullptr);
 		EXPECT_EQ(tail, &node);
 		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
 	}
 
 
 	TEST(o1_d_linked, PopFrontAfterPushFront) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node node;
+		o1::d_linked::list list;
+		o1::d_linked::node node;
+
+		EXPECT_EQ(list.size(), 0);
 		list.push_front(&node);
 		EXPECT_FALSE(list.empty());
+		EXPECT_EQ(list.size(), 1);
+
 		auto front = list.pop_front();
 		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
+
 		auto tail = list.pop_back();
 		EXPECT_EQ(front, &node);
 		EXPECT_EQ(tail, nullptr);
+		EXPECT_EQ(list.size(), 0);
 	}
 
 
 	TEST(o1_d_linked, PopBackAfterPushFront) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node node;
+		o1::d_linked::list list;
+		o1::d_linked::node node;
+
+		EXPECT_EQ(list.size(), 0);
 		list.push_front(&node);
 		EXPECT_FALSE(list.empty());
+		EXPECT_EQ(list.size(), 1);
+
 		auto tail = list.pop_back();
 		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
+
 		auto front = list.pop_front();
 		EXPECT_EQ(front, nullptr);
 		EXPECT_EQ(tail, &node);
+		EXPECT_EQ(list.size(), 0);
+	}
+
+
+	TEST(o1_d_linked, PushBackAfterMove) {
+		o1::d_linked::list src;
+		o1::d_linked::node nodes[3];
+
+		EXPECT_EQ(src.size(), 0);
+
+		src.push_back(&nodes[0]);
+
+		EXPECT_FALSE(src.empty());
+		EXPECT_EQ(src.size(), 1);
+
+		o1::d_linked::list dst(std::move(src));
+		EXPECT_EQ(src.size(), 0);
+		EXPECT_EQ(dst.size(), 1);
+
+		src.push_back(&nodes[1]);
+		EXPECT_EQ(src.size(), 1);
+		EXPECT_EQ(dst.size(), 1);
+
+		dst.push_back(&nodes[2]);
+		EXPECT_EQ(src.size(), 1);
+		EXPECT_EQ(dst.size(), 2);
+	}
+
+
+	TEST(o1_d_linked, PushFrontAfterMove) {
+		o1::d_linked::list src;
+		o1::d_linked::node nodes[3];
+
+		EXPECT_EQ(src.size(), 0);
+
+		src.push_front(&nodes[0]);
+
+		EXPECT_FALSE(src.empty());
+		EXPECT_EQ(src.size(), 1);
+
+		o1::d_linked::list dst(std::move(src));
+		EXPECT_EQ(src.size(), 0);
+		EXPECT_EQ(dst.size(), 1);
+
+		src.push_front(&nodes[1]);
+		EXPECT_EQ(src.size(), 1);
+		EXPECT_EQ(dst.size(), 1);
+
+		dst.push_front(&nodes[2]);
+		EXPECT_EQ(src.size(), 1);
+		EXPECT_EQ(dst.size(), 2);
 	}
 
 
 	TEST(o1_d_linked, ForwardLoop) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node nodes[10];
-
-		for (auto& i: nodes) {
-			list.push_back(&i);
-		}
+		o1::d_linked::list list;
+		o1::d_linked::node nodes[10];
 
 		int inode = 0;
-		for (o1::list::d_linked::node* node = list.start();
+		for (auto& i: nodes) {
+			EXPECT_EQ(list.size(), inode);
+			list.push_back(&i);
+			++inode;
+			EXPECT_EQ(list.size(), inode);
+		}
+
+		inode = 0;
+		for (o1::d_linked::node* node = list.start();
 			 node != list.finish();
 			 ++inode, node = node->next()) {
 			EXPECT_EQ(node, &nodes[inode]) << "inode=" << inode << " vs " << (node - &node[0]);
@@ -148,15 +241,20 @@ namespace {
 	}
 
 	TEST(o1_d_linked, ReverseLoop) {
-		o1::list::d_linked list;
-		o1::list::d_linked::node nodes[10];
+		o1::d_linked::list list;
+		o1::d_linked::node nodes[10];
+
+		int inode = 0;
 
 		for (auto& i: nodes) {
+			EXPECT_EQ(list.size(), inode);
 			list.push_front(&i);
+			++inode;
+			EXPECT_EQ(list.size(), inode);
 		}
 
-		int inode = 9;
-		for (o1::list::d_linked::node* node = list.r_start();
+		inode = 9;
+		for (o1::d_linked::node* node = list.r_start();
 			 node != list.finish();
 			 --inode, node = node->prev()) {
 			EXPECT_EQ(node, &nodes[inode]) << "inode=" << inode << " vs " << (node - &node[0]);

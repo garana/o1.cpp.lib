@@ -31,73 +31,81 @@
  *
  */
 
-#ifndef O1CPPLIB_O1_STACK_T_HH
-#define O1CPPLIB_O1_STACK_T_HH
+#ifndef O1CPPLIB_O1_S_LINKED_QUEUE_HH
+#define O1CPPLIB_O1_S_LINKED_QUEUE_HH
 
-#include "o1.stack.hh"
-#include "../o1.member.hh"
+#include "../list/o1.s_linked.list.hh"
 
 namespace o1 {
 
-	template <typename Node, std::ptrdiff_t node_offset>
-	class stack_t: protected o1::stack {
+	namespace s_linked {
 
-	public:
-		class node: protected o1::stack::node {
-			friend class stack_t<Node, node_offset>;
+		/**
+		 * TODO sync doc w/ list
+		 * Non-owning, simply linked queue.
+		 * Nodes can't detach themselves from the queue.
+		 */
+		class queue: protected o1::s_linked::list {
+
+		public:
+			using node = o1::s_linked::node;
+
+			queue() = default;
+
+			queue(const queue& that) = delete;
+
+			queue(queue&& that) noexcept:
+				list(std::move(that)) {
+			}
+
+			/**
+			 * Upon destruction, entries are NOT deleted.
+			 */
+			~queue() = default;
+
+			using o1::s_linked::list::empty;
+
+			/**
+			 * Push the @param node to the end of the queue.
+			 * @param node element to be pushed.
+			 */
+			inline void push(node* node) {
+				list::push_back(static_cast<s_linked::node*>(node));
+			}
+
+			/**
+			 * Removes the element from the head of the queue.
+			 * @return the element removed from the head queue, or nullptr if it's empty.
+			 */
+			inline node* pop() {
+				return static_cast<node*>(list::pop_front());
+			}
+
+			/**
+			 * Returns the element at the head of the queue.
+			 * @return the element at the head of the queue, or nullptr if it's empty.
+			 */
+			inline node* peek() {
+				return empty() ?
+					   nullptr :
+					   static_cast<node*>(list::start());
+			}
+
+			/**
+			 * Returns the element at the tail of the queue.
+			 * @return the element at the tail of the queue, or nullptr if it's empty.
+			 */
+			inline const node* peek() const {
+				return empty() ?
+					   nullptr :
+					   static_cast<const node*>(list::start());
+			}
+
+
 		};
 
-	protected:
-		using member = o1::member<Node, stack_t::node, node_offset>;
+	}
 
-	public:
-
-		stack_t() = default;
-
-		stack_t(const stack_t& that) = delete;
-
-		stack_t(stack_t&& that) noexcept:
-			stack(std::move(that)) {
-		}
-
-		~stack_t() = default;
-
-		using stack::empty;
-
-		/**
-		 * "Alias" of stack::push(node).
-		 * Push the @param node to the end of the stack.
-		 * @param node element to be pushed.
-		 */
-		void push(Node* node) {
-			stack::push_back(member::node2member(node));
-		}
-
-		/**
-		 * "Alias" of stack::pop().
-		 * Removes the element from the head of the stack.
-		 * @return the element removed from the head stack, or nullptr if it's empty.
-		 */
-		Node* pop() {
-			return member::member2node(static_cast<stack_t::node*>(stack::pop()));
-		}
-
-		/**
-		 * Returns the element at the head of the stack.
-		 * @return the element at the head of the stack, or nullptr if it's empty.
-		 */
-		Node* peek() {
-			return member::member2node(static_cast<stack_t::node*>(stack::peek()));
-		}
-
-		/**
-		 * Returns the element at the tail of the stack.
-		 * @return the element at the tail of the stack, or nullptr if it's empty.
-		 */
-		const Node* peek() const {
-			return member::member2node(static_cast<const stack_t::node*>(stack::peek()));
-		}
-	};
 }
 
-#endif //O1CPPLIB_O1_STACK_T_HH
+#endif //O1CPPLIB_O1_S_LINKED_QUEUE_HH

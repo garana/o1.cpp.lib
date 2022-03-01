@@ -32,49 +32,32 @@
  */
 
 
-#ifndef O1CPPLIB_O1_CHANGELOG_HH
-#define O1CPPLIB_O1_CHANGELOG_HH
+#ifndef O1CPPLIB_O1_S_LINKED_NODE_T_HH
+#define O1CPPLIB_O1_S_LINKED_NODE_T_HH
 
-#include <cstddef>
-#include "data/list/o1.d_linked.list_t.hh"
+#include "./o1.node_t.hh"
+#include "./o1.s_linked.node.hh"
 
 namespace o1 {
 
-	/**
-	 * Keep modified objects in a list, being able to sweep through
-	 * them later.
-	 * @tparam T type of objects to track.
-	 */
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	class changelog {
+	namespace s_linked {
 
-	public:
-		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
+		// TODO documentation
+		template <typename T>
+		class node_t: public o1::node_t<T>, public o1::s_linked::node {
+		public:
+			node_t() = delete;
+			explicit node_t(T* ref): o1::node_t<T>(ref) { }
+			~node_t() = default;
 
-		list_t& modifiedItems() {
-			static list_t _modifiedItems(getNodeFn);
-			return _modifiedItems;
-		}
+			/**
+			 * Given the datum object, return the o1::s_linked::node_t<T>.
+			 */
+			using getNodeFn = node_t<T>* (*)(T* obj);
+		};
 
-		void modified(T* obj) {
-			auto _node = getNodeFn(obj);
-
-			// if it's already modified, do nothing.
-			if (!_node->empty())
-				return;
-
-			modifiedItems().push_back(obj);
-		}
-
-	};
-
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	changelog<T, getNodeFn>& getChangeLog() {
-		static changelog<T, getNodeFn> _changelog;
-		return _changelog;
 	}
 
 }
 
-#endif //O1CPPLIB_O1_CHANGELOG_HH
+#endif //O1CPPLIB_O1_S_LINKED_NODE_T_HH

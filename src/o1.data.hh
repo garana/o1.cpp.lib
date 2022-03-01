@@ -34,7 +34,6 @@
 #ifndef O1CPPLIB_O1_DATA_HH
 #define O1CPPLIB_O1_DATA_HH
 
-#include "data/o1.member.hh"
 #include "data/o1.list.hh"
 #include "data/o1.queue.hh"
 #include "data/o1.stack.hh"

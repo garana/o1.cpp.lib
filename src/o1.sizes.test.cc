@@ -32,49 +32,58 @@
  */
 
 
-#ifndef O1CPPLIB_O1_CHANGELOG_HH
-#define O1CPPLIB_O1_CHANGELOG_HH
+#include <gtest/gtest.h>
+#include "o1.data.hh"
+#include "o1.int.hh"
 
-#include <cstddef>
-#include "data/list/o1.d_linked.list_t.hh"
+#define SHOW(s)  std::cout << (#s) << ": " << s << "\n";
 
-namespace o1 {
+namespace {
 
-	/**
-	 * Keep modified objects in a list, being able to sweep through
-	 * them later.
-	 * @tparam T type of objects to track.
-	 */
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	class changelog {
-
-	public:
-		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
-
-		list_t& modifiedItems() {
-			static list_t _modifiedItems(getNodeFn);
-			return _modifiedItems;
-		}
-
-		void modified(T* obj) {
-			auto _node = getNodeFn(obj);
-
-			// if it's already modified, do nothing.
-			if (!_node->empty())
-				return;
-
-			modifiedItems().push_back(obj);
-		}
+	class C {
 
 	};
 
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	changelog<T, getNodeFn>& getChangeLog() {
-		static changelog<T, getNodeFn> _changelog;
-		return _changelog;
+	class D: public C {
+
+	};
+
+	class V {
+	public:
+		virtual ~V() = default;
+	};
+
+	class W: public V {
+	public:
+		~W() override = default;
+	};
+
+	TEST(print, size_of) {
+		SHOW(sizeof(int));
+		SHOW(sizeof(long));
+		SHOW(sizeof(long long));
+		SHOW(sizeof(int128_t));
+		SHOW(sizeof(void*));
+		SHOW(sizeof(std::function<void()>));
+		SHOW(sizeof(std::function<void()>*));
+		SHOW(sizeof(std::function<void(int)>));
+		SHOW(sizeof(o1::s_linked::list));
+		SHOW(sizeof(o1::s_linked::list::node));
+		SHOW(sizeof(o1::d_linked::list));
+		SHOW(sizeof(o1::d_linked::list::node));
+		SHOW(sizeof(o1::s_linked::queue));
+		SHOW(sizeof(o1::s_linked::queue::node));
+		SHOW(sizeof(o1::d_linked::queue));
+		SHOW(sizeof(o1::d_linked::queue::node));
+		SHOW(sizeof(o1::s_linked::stack));
+		SHOW(sizeof(o1::s_linked::stack::node));
+		SHOW(sizeof(o1::d_linked::stack));
+		SHOW(sizeof(o1::d_linked::stack::node));
+		SHOW(sizeof(o1::d_linked::stack::node));
+		SHOW(sizeof(C));
+		SHOW(sizeof(D));
+		SHOW(sizeof(V));
+		SHOW(sizeof(W));
 	}
 
 }
-
-#endif //O1CPPLIB_O1_CHANGELOG_HH

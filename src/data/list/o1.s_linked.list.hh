@@ -36,10 +36,11 @@
 
 #include <cstddef>
 #include <algorithm>
+#include "../node/o1.s_linked.node.hh"
 
 namespace o1 {
 
-	namespace list {
+	namespace s_linked {
 
 		/**
 		 * Simply Linked List.
@@ -55,35 +56,11 @@ namespace o1 {
 		 *
 		 * This data structure does not allow a random node to be detached.
 		 *
-		 * Instead of keeping a list of nodes with a pointer to the data, the data structure
-		 * should include the d_linked::node.
-		 *
-		 * Note that the s_linked::node::next() would point to the node member, not the
-		 * node data structure.
-		 *
 		 */
-		class s_linked {
-
+		class list {
 		public:
 
-			class node {
-				node* _next = nullptr;
-
-			public:
-				node() {
-					_next = nullptr;
-				}
-
-				node(const node& that) = delete;
-
-				node(node&& that) = delete;
-
-				[[nodiscard]] const node* next() const { return _next; }
-
-				node* next() { return _next; }
-
-				friend class s_linked;
-			};
+			using node = o1::s_linked::node;
 
 		private:
 
@@ -91,26 +68,30 @@ namespace o1 {
 			node* _tail;
 
 		public:
-			s_linked(): _tail(&_head) { };
+			list() : _tail(&_head) {};
 
-			s_linked(const s_linked& that) = delete;
+			list(const list& that) = delete;
 
-			s_linked(s_linked&& that) noexcept;
+			list(list&& that) noexcept;
 
 			/**
 			 * Upon destruction, entries are NOT deleted.
 			 * Nodes with destructor called before the list is destroyed lead to a corrupt list.
 			 */
-			~s_linked() = default;
+			~list() = default;
 
 			[[nodiscard]] const node* start() const { return _head.next(); }
 
 			node* start() { return _head.next(); }
 
 			/**
-			 * @return true iff the list is empty.
-			 */
-			[[nodiscard]] bool empty() const { return _head.next() == nullptr; }
+				 * @return true iff the list is empty.
+				 */
+			[[nodiscard]] bool empty() const {
+				return _head.next() == nullptr;
+			}
+
+			// TODO add size() method, also to stack & queue
 
 			/**
 			 * @return true iff the list is empty.
@@ -138,6 +119,7 @@ namespace o1 {
 		};
 
 	}
+
 }
 
 #endif //O1_LIB_SLL_HH

@@ -149,7 +149,9 @@ uint64_t o1::aton<uint64_t>(const std::string& s) {
 }
 
 //template <>
-//uint128_t o1::xstrto<uint128_t>(const std::string& s);
+//uint128_t o1::aton<uint128_t>(const std::string& s) {
+//
+//}
 
 template <>
 float o1::aton<float>(const std::string& s) { return xstrtof(s); }

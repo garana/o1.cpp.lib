@@ -156,6 +156,7 @@ TEST(flag_set, sixtyFourBits) {
 }
 
 TEST(flag_set, large) {
+
 	o1::flag_set<enumLargeTest, std::vector<bool>> test_set;
 	EXPECT_EQ(test_set.isSet(enumLargeTest::enNONE), false);
 	EXPECT_EQ(test_set.isSet(enumLargeTest::enOne), false);

@@ -32,81 +32,91 @@
  */
 
 #include <gtest/gtest.h>
-#include "o1.stack_t.hh"
+#include "o1.s_linked.queue_t.hh"
 
+// TODO all UTs in namespace{}
 namespace {
 
+	// TODO define this for list, queue & stack
+	template <typename T>
+	using queue_t = o1::s_linked::queue_t<T>;
+
+	template <typename T>
+	using node = typename queue_t<T>::node;
+
 	struct MyNode {
+
 		int value{};
-		o1::stack::node node;
+		node<MyNode> _node;
+
+		MyNode(): _node(this) { }
+
+		static ::node<MyNode>* getNode(MyNode* that) {
+			return &that->_node;
+		}
 	};
 
-	using stack_t = o1::stack_t<MyNode, offsetof(MyNode, node)>;
 
-
-	TEST(o1_stack, Constructor) {
-		stack_t stack;
-		EXPECT_TRUE(stack.empty());
+	TEST(o1_queue_t, Constructor) {
+		queue_t<MyNode> queue(MyNode::getNode);
+		EXPECT_TRUE(queue.empty());
 	}
 
 
-	TEST(o1_stack, MoveConstructorEmptyList) {
-		stack_t src;
-		stack_t dst(std::move(src));
+	TEST(o1_queue_t, MoveConstructorEmptyList) {
+		queue_t<MyNode> src(MyNode::getNode);
+		queue_t<MyNode> dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_TRUE(dst.empty());
 	}
 
-	TEST(o1_stack, MoveConstructorNonEmptyList) {
-		stack_t src;
+	TEST(o1_queue_t, MoveConstructorNonEmptyList) {
+		queue_t<MyNode> src(MyNode::getNode);
 		MyNode node;
 		src.push(&node);
-		stack_t dst(std::move(src));
+		queue_t<MyNode> dst(std::move(src));
 		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
 		EXPECT_FALSE(dst.empty());
 	}
 
-	TEST(o1_stack, Push) {
-		stack_t stack;
+	TEST(o1_queue_t, Push) {
+		queue_t<MyNode> queue(MyNode::getNode);
 		MyNode node;
-		stack.push(&node);
-		EXPECT_FALSE(stack.empty());
+		queue.push(&node);
+		EXPECT_FALSE(queue.empty());
 	}
 
 
-	TEST(o1_stack, PopAfterPush) {
-		stack_t stack;
+	TEST(o1_queue_t, PopAfterPush) {
+		queue_t<MyNode> queue(MyNode::getNode);
 		MyNode node;
-		stack.push(&node);
-		EXPECT_FALSE(stack.empty());
-		auto head = stack.pop();
-		EXPECT_TRUE(stack.empty());
-		auto none = stack.pop();
+		queue.push(&node);
+		EXPECT_FALSE(queue.empty());
+		auto head = queue.pop();
+		EXPECT_TRUE(queue.empty());
+		auto none = queue.pop();
 		EXPECT_EQ(head, &node);
 		EXPECT_EQ(none, nullptr);
-		EXPECT_TRUE(stack.empty());
+		EXPECT_TRUE(queue.empty());
 	}
 
-	TEST(o1_stack, Loop) {
-		stack_t stack;
+	TEST(o1_queue_t, Loop) {
+		queue_t<MyNode> queue(MyNode::getNode);
 		MyNode nodes[10];
-		int inode;
 
-		inode = 0;
 		for (auto& i: nodes) {
-			i.value = inode;
-			stack.push(&i);
+			queue.push(&i);
 		}
 
-		inode = 9;
-		while (MyNode* node = stack.peek()) {
-			const MyNode* const_node = const_cast<const stack_t&>(stack).peek();
-			MyNode* head = stack.pop();
+		int inode = 0;
+		while (MyNode* node = queue.peek()) {
+			const MyNode* const_node = const_cast<const queue_t<MyNode>&>(queue).peek();
+			MyNode* head = queue.pop();
 			EXPECT_EQ(node, const_node) << "inode=" << inode << " vs " << (node - &node[0]);
 			EXPECT_EQ(node, head) << "inode=" << inode << " vs " << (node - &node[0]);
 			EXPECT_EQ(node, &nodes[inode]) << "inode=" << inode << " vs " << (node - &node[0]);
 			EXPECT_LT(inode, 10) << "inode=" << inode << " vs " << (node - &node[0]);
-			--inode;
+			++inode;
 		}
 
 	}

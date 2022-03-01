@@ -32,49 +32,91 @@
  */
 
 
-#ifndef O1CPPLIB_O1_CHANGELOG_HH
-#define O1CPPLIB_O1_CHANGELOG_HH
+#ifndef O1CPPLIB_O1_D_LINKED_NODE_HH
+#define O1CPPLIB_O1_D_LINKED_NODE_HH
 
-#include <cstddef>
-#include "data/list/o1.d_linked.list_t.hh"
+#include <memory>
 
 namespace o1 {
 
-	/**
-	 * Keep modified objects in a list, being able to sweep through
-	 * them later.
-	 * @tparam T type of objects to track.
-	 */
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	class changelog {
+	namespace d_linked {
 
-	public:
-		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
+		class node;
 
-		list_t& modifiedItems() {
-			static list_t _modifiedItems(getNodeFn);
-			return _modifiedItems;
-		}
+		// TODO documentation
+		class node {
 
-		void modified(T* obj) {
-			auto _node = getNodeFn(obj);
+		public:
+			class EventHandlers {
+			public:
+				virtual void onAttach(node*) = 0;
+				virtual void onDetach(node*) = 0;
+			};
 
-			// if it's already modified, do nothing.
-			if (!_node->empty())
-				return;
+		private:
+			node* _next = nullptr;
+			node* _prev = nullptr;
+			std::shared_ptr<EventHandlers> _handlers = nullptr;
+			void _push_back(node* node);
+			void _onAttach(node* node);
 
-			modifiedItems().push_back(obj);
-		}
+		public:
+			node();
 
-	};
+			explicit node(std::shared_ptr<EventHandlers> handlers);
 
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	changelog<T, getNodeFn>& getChangeLog() {
-		static changelog<T, getNodeFn> _changelog;
-		return _changelog;
+			node(const node& that) = delete;
+
+			/**
+			 * Move constructor.
+			 * Replace @param that with *this on the list.
+			 * @param that
+			 */
+			node(node&& that) noexcept;
+
+			inline node* eventHandlers(std::shared_ptr<EventHandlers> handlers) {
+				_handlers = handlers;
+				return this;
+			}
+
+			/**
+			 * Detach this node on destructor.
+			 */
+			~node() { detach(); }
+
+			void detach();
+
+			[[nodiscard]] inline const node* next() const { return _next; }
+
+			inline node* next() { return _next; }
+
+			[[nodiscard]] inline const node* prev() const { return _prev; }
+
+			inline node* prev() { return _prev; }
+
+			/**
+			 * Inserts @param next after *this.
+			 */
+			void push_back(node* next);
+
+			/**
+			 * Inserts @param node before *this.
+			 */
+			void push_front(node* node);
+
+			/**
+			 * @return if this node is the only one in the list.
+			 */
+			bool empty();
+
+			/**
+			 * @return if this node is the only one in the list.
+			 */
+			bool empty() const;
+
+		};
+
 	}
-
 }
 
-#endif //O1CPPLIB_O1_CHANGELOG_HH
+#endif //O1CPPLIB_O1_D_LINKED_NODE_HH

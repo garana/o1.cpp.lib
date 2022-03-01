@@ -31,77 +31,58 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "o1.s_linked.list.hh"
+#include "../../o1.debug.hh"
+#include "../../o1.logging.hh"
 
-namespace {
+using o1::s_linked::list;
+using node = o1::s_linked::list::node;
 
-	TEST(o1_s_linked, Constructor) {
-		o1::s_linked::list list;
-		EXPECT_TRUE(list.empty());
+list::list(list&& that) noexcept {
+	_head.move(that._head);
+
+	that._tail = &that._head;
+	_tail = &_head;
+}
+
+void
+list::push_back(node* node) {
+	if (o1::flags::extended_checks()) {
+		o1::xassert(
+			node->next() == nullptr,
+			"o1::list::s_linked::push_back: node to push must be empty"
+		);
 	}
 
+	_tail->next(node);
+	_tail = node;
+}
 
-	TEST(o1_s_linked, MoveConstructorEmptyList) {
-		o1::s_linked::list src;
-		o1::s_linked::list dst(std::move(src));
-		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
-		EXPECT_TRUE(dst.empty());
+void
+list::push_front(node* node) {
+	if (o1::flags::extended_checks()) {
+		o1::xassert(
+			node->next() == nullptr,
+			"o1::list::s_linked::push_front: node to push must be empty"
+		);
 	}
 
-	TEST(o1_s_linked, MoveConstructorNonEmptyList) {
-		o1::s_linked::list src;
-		o1::s_linked::node node;
-		src.push_back(&node);
-		o1::s_linked::list dst(std::move(src));
-		EXPECT_TRUE(src.empty()); // NOLINT(bugprone-use-after-move)
-		EXPECT_FALSE(dst.empty());
+	s_linked::node* tmp = _head.next();
+	_head.next(node);
+	node->next(tmp);
+}
+
+
+node*
+list::pop_front() {
+	node* retVal = _head.next();
+
+	if (retVal != nullptr) {
+		_head.next(_head.next()->next());
+		retVal->next(nullptr);
+		return retVal;
 	}
 
-	TEST(o1_s_linked, PushBack) {
-		o1::s_linked::list list;
-		o1::s_linked::node node;
-		list.push_back(&node);
-		EXPECT_FALSE(list.empty());
-	}
-
-
-	TEST(o1_s_linked, PushFront) {
-		o1::s_linked::list list;
-		o1::s_linked::node node;
-		list.push_front(&node);
-		EXPECT_FALSE(list.empty());
-	}
-
-	TEST(o1_s_linked, PopFrontAfterPushBack) {
-		o1::s_linked::list list;
-		o1::s_linked::node node;
-		list.push_back(&node);
-		EXPECT_FALSE(list.empty());
-		auto front = list.pop_front();
-		EXPECT_TRUE(list.empty());
-		auto tail = list.pop_front();
-		EXPECT_EQ(front, &node);
-		EXPECT_EQ(tail, nullptr);
-		EXPECT_TRUE(list.empty());
-	}
-
-	TEST(o1_s_linked, ForwardLoop) {
-		o1::s_linked::list list;
-		o1::s_linked::node nodes[10];
-
-		for (auto& i: nodes) {
-			list.push_back(&i);
-		}
-
-		int inode = 0;
-		for (o1::s_linked::node* node = list.start();
-			 node != nullptr;
-			 ++inode, node = node->next()) {
-			EXPECT_EQ(node, &nodes[inode]) << "inode=" << inode << " vs " << (node - &node[0]);
-			EXPECT_LT(inode, 10) << "inode=" << inode << " vs " << (node - &node[0]);
-		}
-
-	}
-
+	_tail = &_head;
+	return nullptr;
 }

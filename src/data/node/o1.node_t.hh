@@ -32,49 +32,42 @@
  */
 
 
-#ifndef O1CPPLIB_O1_CHANGELOG_HH
-#define O1CPPLIB_O1_CHANGELOG_HH
-
-#include <cstddef>
-#include "data/list/o1.d_linked.list_t.hh"
+#ifndef O1CPPLIB_O1_NODE_T_HH
+#define O1CPPLIB_O1_NODE_T_HH
 
 namespace o1 {
 
 	/**
-	 * Keep modified objects in a list, being able to sweep through
-	 * them later.
-	 * @tparam T type of objects to track.
+	 * Typed node, holding a pointer to the datum (T).
+	 * @tparam T
 	 */
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	class changelog {
-
+	template <typename T>
+	class node_t {
+		T* _ref{nullptr};
 	public:
-		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
+		node_t() = delete;
 
-		list_t& modifiedItems() {
-			static list_t _modifiedItems(getNodeFn);
-			return _modifiedItems;
+		explicit node_t(T* ref): _ref(ref) { }
+
+		node_t(node_t&& that) noexcept {
+			_ref = that._ref;
+			that._ref = nullptr;
 		}
 
-		void modified(T* obj) {
-			auto _node = getNodeFn(obj);
+		[[nodiscard]] inline T* ref() { return _ref; }
+		[[nodiscard]] inline const T* ref() const { return _ref; }
 
-			// if it's already modified, do nothing.
-			if (!_node->empty())
-				return;
+		[[nodiscard]] inline static T* ref(node_t<T>* node) {
+			return node == nullptr ? nullptr : node->ref();
+		}
 
-			modifiedItems().push_back(obj);
+		[[nodiscard]] inline static const T* ref(const node_t<T>* node) {
+			return node == nullptr ? nullptr : node->ref();
 		}
 
 	};
 
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	changelog<T, getNodeFn>& getChangeLog() {
-		static changelog<T, getNodeFn> _changelog;
-		return _changelog;
-	}
 
 }
 
-#endif //O1CPPLIB_O1_CHANGELOG_HH
+#endif //O1CPPLIB_O1_NODE_T_HH

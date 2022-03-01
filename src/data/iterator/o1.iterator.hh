@@ -31,28 +31,43 @@
  *
  */
 
-#include "o1.queue.hh"
 
-o1::queue::queue(o1::queue&& that) noexcept:
-	d_linked(std::move(that)) {
+#ifndef O1CPPLIB_O1_ITERATOR_HH
+#define O1CPPLIB_O1_ITERATOR_HH
+
+#include <type_traits>
+
+namespace o1 {
+
+	template <typename Node>
+	class iterator {
+	protected:
+		Node* _node{nullptr};
+
+	public:
+		explicit iterator(Node* node): _node(node) {}
+
+		iterator(const iterator<Node>& that) = default;
+
+		iterator(iterator<Node>&& that) noexcept :
+			_node(that._node) {
+			that._node = nullptr;
+		}
+
+		[[nodiscard]] Node* operator*() {
+			return _node;
+		}
+
+		[[nodiscard]] inline const Node* operator*() const {
+			return _node;
+		}
+
+		bool operator != (const iterator<Node>& that) const {
+			return _node != that._node;
+		}
+
+	};
+
 }
 
-void o1::queue::push(o1::queue::node* node) {
-	d_linked::push_back(static_cast<list::d_linked::node*>(node));
-}
-
-o1::queue::node* o1::queue::pop() {
-	return reinterpret_cast<node*>(d_linked::pop_front());
-}
-
-o1::queue::node* o1::queue::peek() {
-	return empty() ?
-		   nullptr :
-		   reinterpret_cast<node*>(list::d_linked::start());
-}
-
-const o1::queue::node* o1::queue::peek() const {
-	return empty() ?
-		   nullptr :
-		   reinterpret_cast<const node*>(list::d_linked::start());
-}
+#endif //O1CPPLIB_O1_ITERATOR_HH

@@ -32,49 +32,17 @@
  */
 
 
-#ifndef O1CPPLIB_O1_CHANGELOG_HH
-#define O1CPPLIB_O1_CHANGELOG_HH
+#include "o1.s_linked.node.hh"
 
-#include <cstddef>
-#include "data/list/o1.d_linked.list_t.hh"
+using o1::s_linked::node;
 
-namespace o1 {
-
-	/**
-	 * Keep modified objects in a list, being able to sweep through
-	 * them later.
-	 * @tparam T type of objects to track.
-	 */
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	class changelog {
-
-	public:
-		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
-
-		list_t& modifiedItems() {
-			static list_t _modifiedItems(getNodeFn);
-			return _modifiedItems;
-		}
-
-		void modified(T* obj) {
-			auto _node = getNodeFn(obj);
-
-			// if it's already modified, do nothing.
-			if (!_node->empty())
-				return;
-
-			modifiedItems().push_back(obj);
-		}
-
-	};
-
-	template <typename T, typename o1::d_linked::list_t<T>::getNodeFn getNodeFn>
-	changelog<T, getNodeFn>& getChangeLog() {
-		static changelog<T, getNodeFn> _changelog;
-		return _changelog;
-	}
-
+void node::move(node& that) {
+	_next = that._next;
+	that._next = nullptr;
 }
 
-#endif //O1CPPLIB_O1_CHANGELOG_HH
+node* node::next(node* new_value) {
+	node* current = _next;
+	_next = new_value;
+	return current;
+}

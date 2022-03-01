@@ -31,73 +31,18 @@
  *
  */
 
-#ifndef O1CPPLIB_O1_QUEUE_T_HH
-#define O1CPPLIB_O1_QUEUE_T_HH
 
-#include "o1.queue.hh"
-#include "../o1.member.hh"
+#include "./o1.hash.ops_t.hh"
 
-namespace o1 {
+o1::hash::hash_val
+o1::hash::hashValue(const void* buf, size_t length, o1::hash::hash_val previousValue) {
+	hash_val result = previousValue;
+	auto charBuf = reinterpret_cast<const uint8_t*>(buf) + length;
 
-	template <typename Node, std::ptrdiff_t node_offset>
-	class queue_t: protected o1::queue {
+	while (length-- > 0) {
+		result *= 33;
+		result += * --charBuf;
+	}
 
-	public:
-		class node: protected o1::queue::node {
-			friend class queue_t<Node, node_offset>;
-		};
-
-	protected:
-		using member = o1::member<Node, queue_t::node, node_offset>;
-
-	public:
-
-		queue_t() = default;
-
-		queue_t(const queue_t& that) = delete;
-
-		queue_t(queue_t&& that) noexcept:
-			queue(std::move(that)) {
-		}
-
-		~queue_t() = default;
-
-		using queue::empty;
-
-		/**
-		 * "Alias" of queue::push(node).
-		 * Push the @param node to the end of the queue.
-		 * @param node element to be pushed.
-		 */
-		void push(Node* node) {
-			queue::push_back(member::node2member(node));
-		}
-
-		/**
-		 * "Alias" of queue::pop().
-		 * Removes the element from the head of the queue.
-		 * @return the element removed from the head queue, or nullptr if it's empty.
-		 */
-		Node* pop() {
-			return member::member2node(static_cast<queue_t::node*>(queue::pop()));
-		}
-
-		/**
-		 * Returns the element at the head of the queue.
-		 * @return the element at the head of the queue, or nullptr if it's empty.
-		 */
-		Node* peek() {
-			return member::member2node(static_cast<queue_t::node*>(queue::peek()));
-		}
-
-		/**
-		 * Returns the element at the tail of the queue.
-		 * @return the element at the tail of the queue, or nullptr if it's empty.
-		 */
-		const Node* peek() const {
-			return member::member2node(static_cast<const queue_t::node*>(queue::peek()));
-		}
-	};
+	return result;
 }
-
-#endif //O1CPPLIB_O1_QUEUE_T_HH
