@@ -50,6 +50,20 @@ namespace o1 {
 			using getNodeFn = typename o1::d_linked::node_t<T>::getNodeFn;
 			using node = o1::d_linked::node_t<T>;
 
+			class EventHandlers: public o1::d_linked::list::EventHandlers {
+			public:
+				virtual void onAttach(node* node, list* list) = 0;
+				virtual void onDetach(node* node, list* list) = 0;
+
+				void onAttach(o1::d_linked::node* node, list* list) override {
+					onAttach(dynamic_cast<o1::d_linked::node_t<T>>(node), list);
+				}
+
+				void onDetach(o1::d_linked::node* node, list* list) override {
+					onDetach(dynamic_cast<o1::d_linked::node_t<T>>(node), list);
+				}
+			};
+
 		private:
 			getNodeFn getNode{nullptr};
 
@@ -58,6 +72,10 @@ namespace o1 {
 			list_t() = delete;
 
 			explicit list_t(getNodeFn _getNode) : getNode(_getNode) {}
+			list_t(getNodeFn _getNode, EventHandlers* _handlers):
+				list(_handlers),
+				getNode(_getNode) {
+			}
 
 			list_t(const list_t& that) = delete;
 
