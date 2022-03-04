@@ -56,6 +56,7 @@ list::push_back(node* node) {
 
 	_tail->next(node);
 	_tail = node;
+	++_size;
 }
 
 void
@@ -70,6 +71,7 @@ list::push_front(node* node) {
 	s_linked::node* tmp = _head.next();
 	_head.next(node);
 	node->next(tmp);
+	++_size;
 }
 
 
@@ -80,6 +82,7 @@ list::pop_front() {
 	if (retVal != nullptr) {
 		_head.next(_head.next()->next());
 		retVal->next(nullptr);
+		--_size;
 		return retVal;
 	}
 

@@ -66,6 +66,7 @@ namespace o1 {
 
 			node _head;
 			node* _tail;
+			size_t _size{0};
 
 		public:
 			list() : _tail(&_head) {};
@@ -91,7 +92,7 @@ namespace o1 {
 				return _head.next() == nullptr;
 			}
 
-			// TODO add size() method, also to stack & queue
+			size_t size() const { return _size; }
 
 			/**
 			 * @return true iff the list is empty.
