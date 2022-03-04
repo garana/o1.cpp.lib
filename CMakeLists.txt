@@ -175,6 +175,9 @@ add_executable(o1cpp_test
 		src/o1.math.test.cc
 		src/data/hash/o1.hash.sizing_strategy.test.cc
 		src/memory/pool/o1.memory.pool.test.cc
+		src/o1.sizes.test.cc
+		src/data/hash/o1.hash.table_t.test.cc
+		src/o1.changelog.test.cc
 )
 
 target_link_libraries(o1cpp_test gtest_main o1cpp)
