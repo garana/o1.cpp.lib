@@ -82,7 +82,18 @@ add_library(o1cpp
 		src/data/hash/o1.hash.sizing_strategy.cc
 		src/data/hash/o1.hash.sizing_strategy.hh
 		src/data/hash/o1.hash.conf.hh
-)
+
+		src/memory/allocator/o1.memory.stdlib_allocator.cc
+		src/memory/allocator/o1.memory.stdlib_allocator.hh
+		src/memory/allocator/o1.memory.mmap_allocator.cc
+		src/memory/allocator/o1.memory.mmap_allocator.hh
+		src/memory/pool/o1.memory.pooled.hh
+		src/memory/pool/o1.memory.pool.hh
+		src/memory/pool/o1.memory.pool.chunk.hh
+		src/memory/pool/o1.memory.pool_strategy.hh
+		src/memory/pool/o1.memory.pool.free_cache.hh
+		src/memory/pool/o1.memory.pool.chunked.hh
+		)
 
 install(TARGETS o1cpp DESTINATION lib/${PROJECT_NAME})
 
@@ -163,7 +174,8 @@ add_executable(o1cpp_test
 		src/data/hash/o1.hash.ops_t.test.cc
 		src/o1.math.test.cc
 		src/data/hash/o1.hash.sizing_strategy.test.cc
-		src/o1.sizes.test.cc src/data/hash/o1.hash.table_t.test.cc src/o1.changelog.test.cc)
+		src/memory/pool/o1.memory.pool.test.cc
+)
 
 target_link_libraries(o1cpp_test gtest_main o1cpp)
 
