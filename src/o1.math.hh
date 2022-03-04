@@ -40,6 +40,24 @@
 namespace o1 {
 
 	template <typename T>
+	constexpr inline T max(T a, T b) {
+		static_assert(
+			std::is_arithmetic<T>::value,
+			"o1::max can only be used in numeric types"
+		);
+		return a < b ? b : a;
+	}
+
+	template <typename T>
+	constexpr inline T min(T a, T b) {
+		static_assert(
+			std::is_arithmetic<T>::value,
+			"o1::min can only be used in numeric types"
+		);
+		return a < b ? a : b;
+	}
+
+	template <typename T>
 	T square(T x) {
 		return x * x;
 	}
