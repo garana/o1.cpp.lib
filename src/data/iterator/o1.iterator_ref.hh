@@ -62,6 +62,10 @@ namespace o1 {
 			return _node == nullptr ? nullptr : _node->ref();
 		}
 
+		bool operator == (const iterator_ref<Node,Ref>& that) const {
+			return _node == that._node;
+		}
+
 		bool operator != (const iterator_ref<Node,Ref>& that) const {
 			return _node != that._node;
 		}

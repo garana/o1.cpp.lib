@@ -62,6 +62,10 @@ namespace o1 {
 			return _node;
 		}
 
+		bool operator == (const iterator<Node>& that) const {
+			return _node == that._node;
+		}
+
 		bool operator != (const iterator<Node>& that) const {
 			return _node != that._node;
 		}

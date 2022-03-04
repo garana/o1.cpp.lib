@@ -51,6 +51,12 @@ namespace o1 {
 			o1::iterator<Node>(std::move(that)) {
 		}
 
+		bool operator == (const forward_iterator<Node>& that) const {
+			return
+				*static_cast<o1::iterator<Node>*>(this) ==
+				static_cast<o1::iterator<Node>&>(that);
+		}
+
 		bool operator != (const forward_iterator<Node>& that) const {
 			return
 				*static_cast<o1::iterator<Node>*>(this) !=
