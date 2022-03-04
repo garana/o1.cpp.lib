@@ -32,19 +32,24 @@
  */
 
 
-#ifndef O1CPPLIB_O1_INVALID_FORMAT_HH
-#define O1CPPLIB_O1_INVALID_FORMAT_HH
+#ifndef O1CPPLIB_O1_ERROR_ERRNO_HH
+#define O1CPPLIB_O1_ERROR_ERRNO_HH
 
 #include <stdexcept>
+#include <cstring>
 
 namespace o1 {
 
-	class InvalidFormat: public std::runtime_error {
-	public:
-		InvalidFormat(const std::string& type, const std::string& value);
-		InvalidFormat(const std::string& name, const std::string& type, const std::string& value);
-	};
+	namespace errors {
+
+		class Errno: public std::runtime_error {
+		public:
+			Errno();
+			explicit Errno(int errNumber);
+		};
+
+	}
 
 }
 
-#endif //O1CPPLIB_O1_INVALID_FORMAT_HH
+#endif //O1CPPLIB_O1_ERROR_ERRNO_HH

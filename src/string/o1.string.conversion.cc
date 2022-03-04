@@ -35,7 +35,7 @@
 #include "o1.string.conversion.hh"
 #include "o1.string.format.hh"
 #include "o1.string.parse.hh"
-#include "../errors/o1.invalid-format.hh"
+#include "../errors/o1.error.invalid-format.hh"
 
 #include <cinttypes>
 #include <cfloat>
@@ -98,7 +98,7 @@ retType aton_impl(const std::string& s, const std::string& bigTypeName) {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantConditionsOC"
 	if (ret != retBig)
-		throw o1::InvalidFormat(bigTypeName, s);
+		throw o1::errors::InvalidFormat(bigTypeName, s);
 #pragma clang diagnostic pop
 
 	return ret;
@@ -166,7 +166,7 @@ template <>
 bool o1::aton<bool>(const std::string& s) {
 	if (s == "true") return true;
 	if (s == "false") return false;
-	throw InvalidFormat("bool", s);
+	throw o1::errors::InvalidFormat("bool", s);
 }
 
 template <>

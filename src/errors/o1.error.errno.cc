@@ -32,26 +32,14 @@
  */
 
 
-#include "o1.invalid-format.hh"
-#include "../string/o1.string.format.hh"
+#include "o1.error.errno.hh"
 
-o1::InvalidFormat::InvalidFormat(const std::string& type, const std::string& value) :
-	std::runtime_error(
-		o1::stringf(
-			"'%s' is not a valid %s",
-			value.c_str(),
-			type.c_str()
-		)
-	) {
+using o1::errors::Errno;
+
+Errno::Errno():
+	std::runtime_error(strerror(errno)) {
 }
 
-o1::InvalidFormat::InvalidFormat(const std::string& name, const std::string& type, const std::string& value) :
-	std::runtime_error(
-		o1::stringf(
-			"'%s' is not a valid %s in %s",
-			value.c_str(),
-			type.c_str(),
-			name.c_str()
-		)
-	) {
+Errno::Errno(int errNumber):
+	std::runtime_error(strerror(errNumber)) {
 }

@@ -42,8 +42,10 @@ add_library(o1cpp
 		src/data/stack/o1.d_linked.stack_t.hh
 		src/data/stack/o1.s_linked.stack.hh
 		src/data/stack/o1.s_linked.stack_t.hh
-		src/errors/o1.invalid-format.cc
-		src/errors/o1.invalid-format.hh
+		src/errors/o1.error.invalid-format.cc
+		src/errors/o1.error.invalid-format.hh
+		src/errors/o1.error.errno.cc
+		src/errors/o1.error.errno.hh
 		src/o1.changelog.hh
 		src/o1.compare.hh
 		src/o1.data.hh

@@ -33,19 +33,19 @@
 
 
 #include "o1.string.parse.hh"
-#include "../errors/o1.invalid-format.hh"
+#include "../errors/o1.error.invalid-format.hh"
 
 uint64_t o1::xstrtoull(const char* s, int base) {
 	char* end = nullptr;
 	if (!isdigit(*s))
-		throw InvalidFormat("unsigned integer", s);
+		throw o1::errors::InvalidFormat("unsigned integer", s);
 	errno = 0;
 	uint64_t ret = strtoull(s, &end, base);
 	if (errno)
-		throw InvalidFormat("unsigned integer", s);
+		throw o1::errors::InvalidFormat("unsigned integer", s);
 	if ((*s != '\0') && (*end == '\0'))
 		return ret;
-	throw InvalidFormat("unsigned integer", s);
+	throw o1::errors::InvalidFormat("unsigned integer", s);
 }
 
 int64_t o1::xstrtoll(const char* s, int base) {
@@ -53,10 +53,10 @@ int64_t o1::xstrtoll(const char* s, int base) {
 	errno = 0;
 	int64_t ret = strtoll(s, &end, base);
 	if (errno)
-		throw InvalidFormat("integer", s);
+		throw o1::errors::InvalidFormat("integer", s);
 	if ((*s != '\0') && (*end == '\0'))
 		return ret;
-	throw InvalidFormat("integer", s);
+	throw o1::errors::InvalidFormat("integer", s);
 }
 
 float o1::xstrtof(const char* s) {
@@ -64,7 +64,7 @@ float o1::xstrtof(const char* s) {
 	float ret = strtof(s, &end);
 	if ((*s != '\0') && (*end == '\0'))
 		return ret;
-	throw InvalidFormat("float", s);
+	throw o1::errors::InvalidFormat("float", s);
 }
 
 double o1::xstrtod(const char* s) {
@@ -72,7 +72,7 @@ double o1::xstrtod(const char* s) {
 	double ret = strtod(s, &end);
 	if ((*s != '\0') && (*end == '\0'))
 		return ret;
-	throw InvalidFormat("double", s);
+	throw o1::errors::InvalidFormat("double", s);
 }
 
 long double o1::xstrtold(const char* s) {
@@ -80,7 +80,7 @@ long double o1::xstrtold(const char* s) {
 	long double ret = strtold(s, &end);
 	if ((*s != '\0') && (*end == '\0'))
 		return ret;
-	throw InvalidFormat("long double", s);
+	throw o1::errors::InvalidFormat("long double", s);
 }
 
 bool o1::xstrtok(const char *str, const char *sep, size_t &start, size_t &stop) {
@@ -207,7 +207,7 @@ o1::char_class::char_class(const char* char_set) {
 		if (*c == '\\') {
 			++c;
 			if (!*c)
-				throw o1::InvalidFormat(char_set, "char_class");
+				throw o1::errors::InvalidFormat(char_set, "char_class");
 			addChar(c);
 			continue;
 		}
@@ -218,10 +218,10 @@ o1::char_class::char_class(const char* char_set) {
 
 			char end = *++c;
 			if (!end)
-				throw o1::InvalidFormat(char_set, "char_class");
+				throw o1::errors::InvalidFormat(char_set, "char_class");
 
 			if (end < stt)
-				throw o1::InvalidFormat(char_set, "char_class");
+				throw o1::errors::InvalidFormat(char_set, "char_class");
 
 			for (char _c = stt; _c <= end; ++_c) {
 				addChar(&_c);

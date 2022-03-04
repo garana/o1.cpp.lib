@@ -174,7 +174,7 @@ namespace o1 {
 		 *   - ".0-9": adds dot an all digits.
 		 *   - "-a-zA-Z0-9": adds letters (lower and upper case), digits and
 		 *     dash ('-').
-		 *   - "a-" will make the constructor to throw an o1::InvalidFormat.
+		 *   - "a-" will make the constructor to throw an o1::errors::InvalidFormat.
 		 */
 		explicit char_class(const char* char_set);
 
