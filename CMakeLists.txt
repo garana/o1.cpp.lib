@@ -9,10 +9,12 @@ configure_file(src/o1.hh.in o1.hh)
 
 # TODO organize these
 add_library(o1cpp
-		src/data/iterator/o1.forward_iterator.hh
-		src/data/iterator/o1.forward_iterator_ref.hh
         src/data/iterator/o1.iterator.hh
         src/data/iterator/o1.iterator_ref.hh
+		src/data/iterator/o1.forward_iterator.hh
+		src/data/iterator/o1.forward_iterator_ref.hh
+		src/data/iterator/o1.backward_iterator.hh
+		src/data/iterator/o1.backward_iterator_ref.hh
 
         src/data/node/o1.node_t.hh
         src/data/node/o1.d_linked.node.cc

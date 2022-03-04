@@ -37,6 +37,7 @@
 #include "./o1.d_linked.list.hh"
 #include "../node/o1.d_linked.node_t.hh"
 #include "../iterator/o1.forward_iterator_ref.hh"
+#include "../iterator/o1.backward_iterator_ref.hh"
 
 namespace o1 {
 
@@ -78,6 +79,22 @@ namespace o1 {
 
 			o1::forward_iterator_ref<node, T> end() {
 				return o1::forward_iterator_ref<node, T>(
+					static_cast<node_t<T>*>(
+						list::finish()
+					)
+				);
+			}
+
+			o1::backward_iterator_ref<node, T> rbegin() {
+				return o1::backward_iterator_ref<node, T>(
+					static_cast<node_t<T>*>(
+						list::r_start()
+					)
+				);
+			}
+
+			o1::backward_iterator_ref<node, T> rend() {
+				return o1::backward_iterator_ref<node, T>(
 					static_cast<node_t<T>*>(
 						list::finish()
 					)
