@@ -74,7 +74,6 @@ list::push_front(node* node) {
 	++_size;
 }
 
-
 node*
 list::pop_front() {
 	node* retVal = _head.next();

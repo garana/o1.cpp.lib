@@ -31,8 +31,8 @@
  *
  */
 
-#ifndef O1_LIB_SLL_HH
-#define O1_LIB_SLL_HH
+#ifndef O1CPPLIB_O1_S_LINKED_LIST_HH
+#define O1CPPLIB_O1_S_LINKED_LIST_HH
 
 #include <cstddef>
 #include <algorithm>
@@ -123,4 +123,4 @@ namespace o1 {
 
 }
 
-#endif //O1_LIB_SLL_HH
+#endif //O1CPPLIB_O1_S_LINKED_LIST_HH
