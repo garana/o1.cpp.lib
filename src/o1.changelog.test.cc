@@ -38,7 +38,7 @@
 namespace {
 
 	struct Datum;
-	using node = o1::d_linked::list_t<Datum>::node;
+	using node = o1::d_linked::list_t<Datum>::node_t;
 
 	struct Datum {
 		node changelog_node{this};

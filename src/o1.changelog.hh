@@ -50,7 +50,7 @@ namespace o1 {
 
 	public:
 		using list_t = o1::d_linked::list_t<T>;
-		using node_t = typename list_t::node;
+		using node_t = typename list_t::node_t;
 
 		list_t& modifiedItems() {
 			static list_t _modifiedItems(getNodeFn);
