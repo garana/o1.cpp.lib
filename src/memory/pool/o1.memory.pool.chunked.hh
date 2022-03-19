@@ -35,25 +35,30 @@
 #ifndef O1CPPLIB_O1_MEMORY_POOL_CHUNKED_HH
 #define O1CPPLIB_O1_MEMORY_POOL_CHUNKED_HH
 
-#include "o1.memory.pool.hh"
-#include "o1.memory.pool.chunk.hh"
+#include "../../o1.logging.hh"
+#include "./o1.memory.pool.hh"
+#include "./o1.memory.pool.chunk.hh"
 
 namespace o1 {
 
 	namespace memory {
 
 		template <typename T>
-		class pool<T, PoolStrategy::chunkedAlloc> {
+		class pool<T, PoolStrategy::chunkedAlloc>: public pool_base {
 		public:
 
 			using chunk_t = o1::memory::chunk<T>;
 
+			pool():
+				pool_base(o1::demangle(typeid(T).name()) + (":" + ntoa(PoolStrategy::chunkedAlloc))) {
+			}
+
 			void* alloc() {
-				return chunk_t::allocate();
+				return chunk_t::allocate(&_metrics);
 			}
 
 			void dealloc(void* p) {
-				chunk_t::free(p);
+				chunk_t::free(p, &_metrics);
 			}
 
 		};

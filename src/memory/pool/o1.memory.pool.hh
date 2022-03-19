@@ -35,17 +35,24 @@
 #ifndef O1CPPLIB_O1_MEMORY_POOL_HH
 #define O1CPPLIB_O1_MEMORY_POOL_HH
 
+#include <utility>
+
 #include "../../data/list/o1.s_linked.list.hh"
 #include "../../o1.logging.hh"
 #include "o1.memory.pool_strategy.hh"
+#include "o1.memory.pool_base.hh"
 
 namespace o1 {
 
 	namespace memory {
-
-		template<typename T, PoolStrategy poolStrategy>
-		class pool {
+		template <typename T, PoolStrategy poolStrategy>
+		class pool: public pool_base {
 		public:
+
+			pool():
+				pool_base(typeid(T).name() + (":" + ntoa(poolStrategy))) {
+			}
+
 			void* alloc() {
 				o1::fatal("To be overloaded in template specialization");
 			}
@@ -53,13 +60,14 @@ namespace o1 {
 			void dealloc(void* p) {
 				o1::fatal("To be overloaded in template specialization");
 			}
+
 		};
 
 	}
 
 }
 
+#endif //O1CPPLIB_O1_MEMORY_POOL_HH
+
 #include "o1.memory.pool.chunked.hh"
 #include "o1.memory.pool.free_cache.hh"
-
-#endif //O1CPPLIB_O1_MEMORY_POOL_HH

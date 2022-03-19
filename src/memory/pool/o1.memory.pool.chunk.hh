@@ -57,7 +57,7 @@ namespace o1 {
 			// List of chunks of T.
 			// Empty chunks are kept on the back of the list.
 			using chunk_list_t = o1::d_linked::list_t<chunk_t>;
-			using chunk_node_t = typename chunk_list_t::node;
+			using chunk_node_t = typename chunk_list_t::node_t;
 
 			using item_list_t = o1::s_linked::list;
 			using item_node_t = typename o1::s_linked::list::node;
@@ -79,8 +79,7 @@ namespace o1 {
 				);
 			}
 
-			static const constexpr size_t minSize = sizeof(item);
-			static const constexpr size_t itemSize = o1::max(minSize, sizeof(T));
+			static const constexpr size_t itemSize = o1::max(sizeof(item), sizeof(item::allocated) + sizeof(T));
 			static const constexpr size_t alignment = sizeof(void*);
 
 			static const constexpr size_t alignedItemSize =
@@ -89,7 +88,7 @@ namespace o1 {
 				itemSize;
 
 			static const constexpr size_t chunkDataSize = 16384; // TODO make this per-class tunable
-			static const constexpr size_t maxIdleChunks = 4; // TODO make this per-class tunable
+			static const constexpr size_t maxEmptyChunks = 4; // TODO make this per-class tunable
 			static const constexpr size_t bytesPerChunk = chunkDataSize + sizeof(chunk_t);
 
 			static const constexpr size_t itemsPerChunk = chunkDataSize / alignedItemSize;
@@ -104,8 +103,6 @@ namespace o1 {
 			void* objects;
 			chunk_node_t chunks_node{this};
 			item_list_t idleItems;
-			static size_t _emptyChunksCount;
-			static size_t _idleItemsCount;
 
 			/**
 			 * Given an index, return the item address.
@@ -130,9 +127,40 @@ namespace o1 {
 				return &that->chunks_node;
 			}
 
-			static chunk_list_t& chunks() {
+			/**
+			 * List of chunks w/ no busy items.
+			 * @return
+			 */
+			static chunk_list_t& emptyChunks() {
 				static chunk_list_t _chunks{getChunksNode};
 				return _chunks;
+			}
+
+			/**
+			 * List of chunks w/ busy and idle items.
+			 * @return
+			 */
+			static chunk_list_t& nonFullChunks() {
+				static chunk_list_t _chunks{getChunksNode};
+				return _chunks;
+			}
+
+			/**
+			 * List of full chunks.
+			 * @return
+			 */
+			static chunk_list_t& fullChunks() {
+				static chunk_list_t _chunks{getChunksNode};
+				return _chunks;
+			}
+
+			static const alloc_metrics::pool_info* allocMetricsPoolInfo() {
+				static alloc_metrics::pool_info metrics_pool_info{
+					.items_per_chunk = itemsPerChunk,
+					.bytes_per_chunk = bytesPerChunk,
+					.item_size = sizeof(item),
+				};
+				return &metrics_pool_info;
 			}
 
 		public:
@@ -146,10 +174,7 @@ namespace o1 {
 					idleItems.push_back(&item->idle._node);
 				}
 
-				_idleItemsCount += itemsPerChunk;
-
-				chunks().push_back(this);
-				++_emptyChunksCount;
+				emptyChunks().push_back(this);
 			}
 
 			chunk(const chunk& that) = delete;
@@ -157,33 +182,34 @@ namespace o1 {
 			chunk(chunk&& that) = delete;
 
 			~chunk() {
-				o1::xassert(empty(), "Deleting a non-empty chunk!");
-				--_emptyChunksCount;
-				_idleItemsCount -= itemsPerChunk;
+				o1::xassert(idleItems.size() == itemsPerChunk, "Deleting a non-empty chunk!");
 				allocator().free(objects);
 			}
 
 			void* alloc() {
-				if (empty()) {
-					--_emptyChunksCount;
-					chunks_node.detach();
-					chunks().push_front(this);
-				}
+				o1::xassert(!idleItems.empty(), "Requested chunk::alloc() on an full chunk");
 
 				auto node = idleItems.pop_front();
-				--_idleItemsCount;
 
-				o1::xassert(
-					node != nullptr,
-					"chunk<T>::alloc() called for a full chunk?"
-				);
+				if (idleItems.empty()) {
+					chunks_node.detach();
+					fullChunks().push_back(this);
+
+				} else if (idleItems.size() == itemsPerChunk - 1) {
+					// If this was in the idleChunks() list.
+					chunks_node.detach();
+					nonFullChunks().push_back(this);
+
+				}
 
 				auto _item = (item*)(node);
 				_item->allocated._chunk = this;
 				return &_item->allocated._data[0];
 			}
 
-			void dealloc(void* p) {
+			void dealloc(void* p, alloc_metrics* _metrics) {
+				o1::xassert(idleItems.size() != itemsPerChunk, "Requested chunk::alloc() on an empty chunk");
+
 				auto _item = itemFromPointer(p);
 
 				o1::xassert(
@@ -194,64 +220,57 @@ namespace o1 {
 				new (&_item->idle._node) item_node_t();
 
 				idleItems.push_back(&_item->idle._node);
-				++_idleItemsCount;
 
-				if (empty()) {
+				bool chunk_freed = false;
+				bool chunk_idled = false;
+
+				if (idleItems.size() == itemsPerChunk) {
+					chunk_idled = true;
 					// move ourselves to the back
-					++_emptyChunksCount;
 					chunks_node.detach();
-					if (_emptyChunksCount > maxIdleChunks)
-						delete chunks().pop_back();
-					chunks().push_back(this);
+					emptyChunks().push_back(this);
+					if (emptyChunks().size() > maxEmptyChunks) {
+						chunk_freed = true;
+						delete emptyChunks().pop_front();
+					}
+
+				} else if (idleItems.size() == 1) {
+					chunks_node.detach();
+					nonFullChunks().push_back(this);
+
 				}
+
+				_metrics->deallocated(chunk_freed, chunk_idled, allocMetricsPoolInfo());
 			}
 
-			static void* allocate() {
-				auto& _chunks = chunks();
-				auto _ichunk = chunks().rbegin();
-				auto _chunk = _ichunk == chunks().rend() ?
-					new chunk_t() :
-					*_ichunk;
-				return _chunk->alloc();
+			static void* allocate(alloc_metrics* _metrics) {
+				auto& _nonFullChunks = nonFullChunks();
+
+				if (!_nonFullChunks.empty()) {
+					_metrics->allocated(false, false, allocMetricsPoolInfo());
+					return _nonFullChunks.start()->ref()->alloc();
+				}
+
+				auto& _emptyChunks = emptyChunks();
+
+				if (_emptyChunks.empty()) {
+					_metrics->allocated(true, false, allocMetricsPoolInfo());
+					auto _chunk = new chunk_t();
+					return _chunk->alloc();
+				}
+
+				_metrics->allocated(false, true, allocMetricsPoolInfo());
+				return _emptyChunks.start()->ref()->alloc();
 			}
 
-			static void free(void* p) {
+			static void free(void* p, alloc_metrics* _metrics) {
 				auto item = itemFromPointer(p);
-				item->allocated._chunk->dealloc(p);
+				item->allocated._chunk->dealloc(p, _metrics);
 			}
 
-			bool empty() { return idleItems.size() == itemsPerChunk; }
-
-			struct alloc_metric {
-				size_t total;
-				size_t idle;
-			};
-
-			struct alloc_metrics {
-				alloc_metric items;
-				alloc_metric chunks;
-				alloc_metric bytes;
-			};
-
-			static void getAllocMetrics(alloc_metrics* metrics) {
-				metrics->chunks.idle = _emptyChunksCount;
-				metrics->chunks.total = chunks().size();
-
-				metrics->items.idle = _idleItemsCount;
-				metrics->items.total = metrics->chunks.total * itemsPerChunk;
-
-				metrics->bytes.idle = _idleItemsCount * itemSize;
-				metrics->bytes.total = metrics->chunks.total * bytesPerChunk;
-			}
+			// TODO could gather statistics only when needed.
 
 		};
-
-
-		template <typename T>
-		size_t chunk<T>::_emptyChunksCount = 0;
-
-		template <typename T>
-		size_t chunk<T>::_idleItemsCount = 0;
 
 	}
 

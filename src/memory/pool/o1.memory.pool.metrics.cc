@@ -31,68 +31,62 @@
  *
  */
 
+#include "../../o1.logging.hh"
+#include "o1.memory.pool.metrics.hh"
+using o1::memory::alloc_metrics;
 
-#ifndef O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
-#define O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+void alloc_metrics::allocated(
+	bool new_chunk,
+	bool chunk_de_idled,
+	const alloc_metrics::pool_info* poolInfo
+) {
+	check_consistency();
 
-#include "../../data/list/o1.s_linked.list.hh"
-#include "o1.memory.pool.hh"
-
-namespace o1 {
-
-	namespace memory {
-
-		template <typename T>
-		class pool<T, PoolStrategy::freeCache>: public pool_base {
-		public:
-			using list_t = o1::s_linked::list;
-			using node_t = typename list_t::node;
-
-			static_assert(sizeof(T) >= sizeof(node_t), "Refusing to pool small objects");
-
-		private:
-
-			static list_t& freeObjects() {
-				static list_t _freeObjects;
-				return _freeObjects;
-			}
-
-			static const alloc_metrics::pool_info* allocMetricsPoolInfo() {
-				static alloc_metrics::pool_info metrics_pool_info{
-					.items_per_chunk = 1,
-					.bytes_per_chunk = sizeof(T),
-					.item_size = sizeof(T),
-				};
-				return &metrics_pool_info;
-			}
-
-		public:
-			pool():
-				pool_base(o1::demangle(typeid(T).name()) + (":" + ntoa(PoolStrategy::freeCache))) {
-			}
-
-			void* alloc() {
-				auto node = freeObjects().pop_front();
-
-				if (node == nullptr) {
-					_metrics.allocated(true, false, allocMetricsPoolInfo());
-					return std::malloc(sizeof(T));
-				}
-
-				_metrics.allocated(false, false, allocMetricsPoolInfo());
-				return static_cast<void*>(node);
-			}
-
-			void dealloc(void* p) {
-				_metrics.deallocated(false, false, allocMetricsPoolInfo());
-				freeObjects().push_front(static_cast<node_t*>(p));
-				// TODO keep a max number of free objects?
-			}
-
-		};
-
+	if (new_chunk) {
+		items.total += poolInfo->items_per_chunk;
+		items.idle += poolInfo->items_per_chunk;
+		bytes.total += poolInfo->bytes_per_chunk;
+		bytes.idle += poolInfo->bytes_per_chunk;
+		chunks.total++;
 	}
 
+	if (chunk_de_idled) {
+		chunks.idle--;
+	}
+
+	items.idle--;
+	bytes.idle -= poolInfo->item_size;
+
+	check_consistency();
 }
 
-#endif //O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+void alloc_metrics::deallocated(
+	bool chunk_freed,
+	bool chunk_idled,
+	const alloc_metrics::pool_info* poolInfo
+) {
+	check_consistency();
+
+	items.idle++;
+	bytes.idle += poolInfo->item_size;
+
+	if (chunk_idled)
+		chunks.idle++;
+
+	if (chunk_freed) {
+		items.total -= poolInfo->items_per_chunk;
+		items.idle -= poolInfo->items_per_chunk;
+		bytes.total -= poolInfo->bytes_per_chunk;
+		bytes.idle -= poolInfo->bytes_per_chunk;
+		chunks.total--;
+		chunks.idle--;
+	}
+
+	check_consistency();
+}
+
+void o1::memory::alloc_metrics::check_consistency() {
+	o1::xassert(items.idle <= items.total, "internal bug");
+	o1::xassert(bytes.idle <= bytes.total, "internal bug");
+	o1::xassert(chunks.idle <= chunks.total, "internal bug");
+}

@@ -32,67 +32,18 @@
  */
 
 
-#ifndef O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
-#define O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+#include "o1.memory.pool_base.hh"
+using o1::memory::pool_base;
 
-#include "../../data/list/o1.s_linked.list.hh"
-#include "o1.memory.pool.hh"
+pool_base* pool_base::_head{nullptr};
 
-namespace o1 {
+o1::memory::pool_base::pool_base(std::string name) :
+	_name(std::move(name)) {
 
-	namespace memory {
-
-		template <typename T>
-		class pool<T, PoolStrategy::freeCache>: public pool_base {
-		public:
-			using list_t = o1::s_linked::list;
-			using node_t = typename list_t::node;
-
-			static_assert(sizeof(T) >= sizeof(node_t), "Refusing to pool small objects");
-
-		private:
-
-			static list_t& freeObjects() {
-				static list_t _freeObjects;
-				return _freeObjects;
-			}
-
-			static const alloc_metrics::pool_info* allocMetricsPoolInfo() {
-				static alloc_metrics::pool_info metrics_pool_info{
-					.items_per_chunk = 1,
-					.bytes_per_chunk = sizeof(T),
-					.item_size = sizeof(T),
-				};
-				return &metrics_pool_info;
-			}
-
-		public:
-			pool():
-				pool_base(o1::demangle(typeid(T).name()) + (":" + ntoa(PoolStrategy::freeCache))) {
-			}
-
-			void* alloc() {
-				auto node = freeObjects().pop_front();
-
-				if (node == nullptr) {
-					_metrics.allocated(true, false, allocMetricsPoolInfo());
-					return std::malloc(sizeof(T));
-				}
-
-				_metrics.allocated(false, false, allocMetricsPoolInfo());
-				return static_cast<void*>(node);
-			}
-
-			void dealloc(void* p) {
-				_metrics.deallocated(false, false, allocMetricsPoolInfo());
-				freeObjects().push_front(static_cast<node_t*>(p));
-				// TODO keep a max number of free objects?
-			}
-
-		};
-
-	}
-
+	_next = _head;
+	_head = this;
 }
 
-#endif //O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+const o1::memory::alloc_metrics& o1::memory::pool_base::getMetrics() const {
+	return _metrics;
+}

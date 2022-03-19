@@ -32,67 +32,46 @@
  */
 
 
-#ifndef O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
-#define O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+#ifndef O1CPPLIB_O1_MEMORY_POOL_METRICS_HH
+#define O1CPPLIB_O1_MEMORY_POOL_METRICS_HH
 
-#include "../../data/list/o1.s_linked.list.hh"
-#include "o1.memory.pool.hh"
+#include <cstddef>
 
 namespace o1 {
 
 	namespace memory {
 
-		template <typename T>
-		class pool<T, PoolStrategy::freeCache>: public pool_base {
-		public:
-			using list_t = o1::s_linked::list;
-			using node_t = typename list_t::node;
 
-			static_assert(sizeof(T) >= sizeof(node_t), "Refusing to pool small objects");
+		struct efficiency_metric {
+			size_t total{0};
+			size_t idle{0};
 
-		private:
-
-			static list_t& freeObjects() {
-				static list_t _freeObjects;
-				return _freeObjects;
+			inline size_t busy() const { return total - idle; }
+			inline double efficiency() const {
+				return static_cast<double>(busy()) /
+					   static_cast<double>(total);
 			}
+		};
 
-			static const alloc_metrics::pool_info* allocMetricsPoolInfo() {
-				static alloc_metrics::pool_info metrics_pool_info{
-					.items_per_chunk = 1,
-					.bytes_per_chunk = sizeof(T),
-					.item_size = sizeof(T),
-				};
-				return &metrics_pool_info;
-			}
+		struct alloc_metrics {
+			efficiency_metric items;
+			efficiency_metric chunks;
+			efficiency_metric bytes;
 
-		public:
-			pool():
-				pool_base(o1::demangle(typeid(T).name()) + (":" + ntoa(PoolStrategy::freeCache))) {
-			}
+			struct pool_info {
+				size_t items_per_chunk;
+				size_t bytes_per_chunk;
+				size_t item_size;
+			};
 
-			void* alloc() {
-				auto node = freeObjects().pop_front();
+			void allocated(bool new_chunk, bool chunk_de_idled, const pool_info* poolInfo);
 
-				if (node == nullptr) {
-					_metrics.allocated(true, false, allocMetricsPoolInfo());
-					return std::malloc(sizeof(T));
-				}
+			void deallocated(bool chunk_freed, bool chunk_idled, const pool_info* poolInfo);
 
-				_metrics.allocated(false, false, allocMetricsPoolInfo());
-				return static_cast<void*>(node);
-			}
-
-			void dealloc(void* p) {
-				_metrics.deallocated(false, false, allocMetricsPoolInfo());
-				freeObjects().push_front(static_cast<node_t*>(p));
-				// TODO keep a max number of free objects?
-			}
+			void check_consistency();
 
 		};
 
 	}
-
 }
-
-#endif //O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+#endif //O1CPPLIB_O1_MEMORY_POOL_METRICS_HH

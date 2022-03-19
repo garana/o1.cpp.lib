@@ -87,13 +87,20 @@ add_library(o1cpp
 		src/memory/allocator/o1.memory.stdlib_allocator.hh
 		src/memory/allocator/o1.memory.mmap_allocator.cc
 		src/memory/allocator/o1.memory.mmap_allocator.hh
+
 		src/memory/pool/o1.memory.pooled.hh
 		src/memory/pool/o1.memory.pool.hh
 		src/memory/pool/o1.memory.pool.chunk.hh
+		src/memory/pool/o1.memory.pool_strategy.cc
 		src/memory/pool/o1.memory.pool_strategy.hh
 		src/memory/pool/o1.memory.pool.free_cache.hh
 		src/memory/pool/o1.memory.pool.chunked.hh
-		)
+		src/memory/pool/o1.memory.pool_base.cc
+		src/memory/pool/o1.memory.pool_base.hh
+		src/memory/pool/o1.memory.pool.metrics.cc
+		src/memory/pool/o1.memory.pool.metrics.hh
+
+)
 
 install(TARGETS o1cpp DESTINATION lib/${PROJECT_NAME})
 

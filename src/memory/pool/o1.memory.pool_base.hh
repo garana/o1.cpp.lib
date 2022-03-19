@@ -32,67 +32,42 @@
  */
 
 
-#ifndef O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
-#define O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+#ifndef O1CPPLIB_O1_MEMORY_POOL_BASE_HH
+#define O1CPPLIB_O1_MEMORY_POOL_BASE_HH
 
-#include "../../data/list/o1.s_linked.list.hh"
-#include "o1.memory.pool.hh"
+#include <cstddef>
+#include <string>
+#include "./o1.memory.pool.metrics.hh"
 
 namespace o1 {
 
 	namespace memory {
 
-		template <typename T>
-		class pool<T, PoolStrategy::freeCache>: public pool_base {
-		public:
-			using list_t = o1::s_linked::list;
-			using node_t = typename list_t::node;
-
-			static_assert(sizeof(T) >= sizeof(node_t), "Refusing to pool small objects");
-
+		class pool_base {
 		private:
+			std::string _name;
+			pool_base* _next{nullptr};
+			static pool_base* _head;
 
-			static list_t& freeObjects() {
-				static list_t _freeObjects;
-				return _freeObjects;
-			}
-
-			static const alloc_metrics::pool_info* allocMetricsPoolInfo() {
-				static alloc_metrics::pool_info metrics_pool_info{
-					.items_per_chunk = 1,
-					.bytes_per_chunk = sizeof(T),
-					.item_size = sizeof(T),
-				};
-				return &metrics_pool_info;
-			}
+		protected:
+			alloc_metrics _metrics;
 
 		public:
-			pool():
-				pool_base(o1::demangle(typeid(T).name()) + (":" + ntoa(PoolStrategy::freeCache))) {
-			}
+			pool_base() = delete;
 
-			void* alloc() {
-				auto node = freeObjects().pop_front();
+			explicit pool_base(std::string name);
 
-				if (node == nullptr) {
-					_metrics.allocated(true, false, allocMetricsPoolInfo());
-					return std::malloc(sizeof(T));
-				}
+			const std::string& name() const { return _name; }
 
-				_metrics.allocated(false, false, allocMetricsPoolInfo());
-				return static_cast<void*>(node);
-			}
+			virtual const alloc_metrics& getMetrics() const;
 
-			void dealloc(void* p) {
-				_metrics.deallocated(false, false, allocMetricsPoolInfo());
-				freeObjects().push_front(static_cast<node_t*>(p));
-				// TODO keep a max number of free objects?
-			}
+			inline static const pool_base* first() { return _head; }
+
+			inline const pool_base* next() const { return _next; }
 
 		};
 
 	}
 
 }
-
-#endif //O1CPPLIB_O1_MEMORY_POOL_FREE_CACHE_HH
+#endif //O1CPPLIB_O1_MEMORY_POOL_BASE_HH

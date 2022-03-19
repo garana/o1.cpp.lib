@@ -44,6 +44,8 @@ namespace o1 {
 			chunkedAlloc
 		};
 
+		std::string ntoa(PoolStrategy strategy);
+
 	}
 
 }

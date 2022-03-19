@@ -41,7 +41,17 @@ namespace {
 		int x[15];
 	public:
 		Obj() = default;
-		Obj(int _value) {
+		explicit Obj(int _value): x{ _value, } {
+			x[0] = _value;
+			x[14] = _value;
+		}
+	};
+
+	class Obj1: public o1::memory::pooled<Obj, o1::memory::PoolStrategy::freeCache> {
+		int x[15];
+	public:
+		Obj1() = default;
+		explicit Obj1(int _value): x{ _value, } {
 			x[0] = _value;
 			x[14] = _value;
 		}
@@ -54,6 +64,19 @@ namespace {
 
 		for (int i = 10; i--;) {
 			v[i] = new Obj();
+		}
+
+		for (int i = 10; i--;) {
+			delete v[i];
+		}
+	}
+
+	TEST(o1_memory_pooled, basic1) {
+		delete (new Obj1());
+		Obj1* v[10];
+
+		for (int i = 10; i--;) {
+			v[i] = new Obj1();
 		}
 
 		for (int i = 10; i--;) {
@@ -77,6 +100,41 @@ namespace {
 			}
 		}
 
+	}
+
+	TEST(o1_memory_pooled, torture1) {
+		delete (new Obj1());
+		Obj1* v[10000];
+		memset(&v[0], 0, sizeof(v));
+
+		for (int loop = 1000000; loop--;) {
+			int i = rand() % 10000;
+			if (v[i] != nullptr) {
+				delete v[i];
+				v[i] = nullptr;
+			} else {
+				v[i] = new Obj1(i);
+			}
+		}
+
+	}
+
+	TEST(o1_memory_pooled, metrics) {
+		for (const auto* pool = o1::memory::pool_base::first();
+			 pool != nullptr;
+			 pool = pool->next()
+		) {
+			auto& metrics = pool->getMetrics();
+			std::cout
+				<< "pool=" << pool->name() << "\n"
+				<< "\tchunks.idle=" << metrics.chunks.idle << "\n"
+				<< "\tchunks.total=" << metrics.chunks.total << "\n"
+				<< "\titems.idle=" << metrics.items.idle << "\n"
+				<< "\titems.total=" << metrics.items.total << "\n"
+				<< "\tbytes.idle=" << metrics.bytes.idle << "\n"
+				<< "\tbytes.total=" << metrics.bytes.total << "\n"
+				<< "\n";
+		}
 	}
 
 }
