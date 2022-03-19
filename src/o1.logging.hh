@@ -35,6 +35,7 @@
 #ifndef O1CPPLIB_O1_LOGGING_HH
 #define O1CPPLIB_O1_LOGGING_HH
 
+#include <string>
 #include <cstddef>
 #include <sys/syslog.h>
 
@@ -163,6 +164,8 @@ namespace o1 {
 	 * @return
 	 */
 	size_t max_debug_sections();
+
+	std::string demangle(const std::string& s);
 };
 
 #endif //O1CPPLIB_O1_LOGGING_HH

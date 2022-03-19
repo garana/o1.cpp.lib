@@ -42,6 +42,7 @@
 #include <string>
 
 #include <vector>
+#include <cxxabi.h>
 
 [[ noreturn ]]
 static void __fatal();
@@ -268,6 +269,22 @@ int o1::set_debug_level(size_t debug_section, int debug_level) {
 	int ret = rec.level;
 	rec.level = debug_level;
 	return ret;
+}
+
+std::string o1::demangle(const std::string& s) {
+	int status = 10;
+	char* result_c_str = abi::__cxa_demangle(
+		s.c_str(),
+		nullptr,
+		nullptr,
+		&status
+	);
+
+	std::string result{result_c_str};
+
+	free(result_c_str);
+
+	return result;
 }
 
 #include <cassert>
