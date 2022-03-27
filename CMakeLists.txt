@@ -172,7 +172,7 @@ enable_testing()
 add_executable(o1cpp_test
         src/data/list/o1.d_linked.list.test.cc
 		src/data/list/o1.d_linked.list_t.test.cc
-        src/data/list/o1.list.s_linked.test.cc
+		src/data/list/o1.s_linked.list.test.cc
 		src/data/queue/o1.s_linked.queue.test.cc
 		src/data/queue/o1.s_linked.queue_t.test.cc
         src/data/stack/o1.stack.test.cc
