@@ -65,12 +65,7 @@ namespace o1 {
 
 		public:
 			using node = o1::d_linked::node;
-
-			class EventHandlers {
-			public:
-				virtual void onAttach(node*, list*) = 0;
-				virtual void onDetach(node*, list*) = 0;
-			};
+			using EventHandlers = o1::ContainerEventHandlers<node, list>;
 
 		private:
 
@@ -85,16 +80,26 @@ namespace o1 {
 					_list = newList;
 				}
 
-				void onAttach(node* node) override {
-					_list->_numElements++;
+				void attaching(node* node) override {
 					if (_list->_listEventHandlers)
-						_list->_listEventHandlers->onAttach(node, _list);
+						_list->_listEventHandlers->attaching(node, _list);
 				}
 
-				void onDetach(node* node) override {
+				void attached(node* node) override {
+					_list->_numElements++;
+					if (_list->_listEventHandlers)
+						_list->_listEventHandlers->attached(node, _list);
+				}
+
+				void detaching(node* node) override {
+					if (_list->_listEventHandlers)
+						_list->_listEventHandlers->detaching(node, _list);
+				}
+
+				void detached(node* node) override {
 					_list->_numElements--;
 					if (_list->_listEventHandlers)
-						_list->_listEventHandlers->onDetach(node, _list);
+						_list->_listEventHandlers->detached(node, _list);
 				}
 			};
 

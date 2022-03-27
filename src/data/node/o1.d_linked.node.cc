@@ -73,19 +73,31 @@ node::node(class node&& that) noexcept:
 void
 node::detach() {
 	if (!empty()) {
+
+		if (_handlers != nullptr)
+			_handlers->detaching(this);
+
 		_next->_prev = _prev;
 		_prev->_next = _next;
 		_prev = _next = this;
 
 		if (_handlers != nullptr)
-			_handlers->onDetach(this);
+			_handlers->detached(this);
+
 		_handlers = nullptr;
 	}
+}
+void
+node::_push_back(node* node) {
+	node->_prev = _prev;
+	_prev->_next = node;
+	_prev = node;
+	node->_next = this;
 }
 
 
 void
-node::_push_back(node* node) {
+node::push_back(node* node) {
 	if (o1::flags::extended_checks()) {
 		o1::xassert(
 			node->empty(),
@@ -93,30 +105,29 @@ node::_push_back(node* node) {
 		);
 	}
 
-	node->_prev = _prev;
-	_prev->_next = node;
-	_prev = node;
-	node->_next = this;
-}
-
-void
-node::_onAttach(node* node) {
 	node->_handlers = _handlers;
-	if (_handlers != nullptr)
-		_handlers->onAttach(node);
-}
 
-void
-node::push_back(node* node) {
+	if (_handlers != nullptr)
+		_handlers->attaching(node);
+
 	_push_back(node);
-	_onAttach(node);
+
+	if (_handlers != nullptr)
+		_handlers->attached(node);
 }
 
 
 void
 node::push_front(node* node) {
+	node->_handlers = _handlers;
+
+	if (_handlers != nullptr)
+		_handlers->attaching(node);
+
 	node->_push_back(this);
-	_onAttach(node);
+
+	if (_handlers != nullptr)
+		_handlers->attached(node);
 }
 
 bool node::empty() {

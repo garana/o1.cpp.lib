@@ -47,22 +47,15 @@ namespace o1 {
 		class list_t : protected o1::d_linked::list {
 
 		public:
+
+			using node_t = o1::d_linked::node_t<T>;
 			using getNodeFn = typename o1::d_linked::node_t<T>::getNodeFn;
-			using node = o1::d_linked::node_t<T>;
-
-			class EventHandlers: public o1::d_linked::list::EventHandlers {
-			public:
-				virtual void onAttach(node* node, list* list) = 0;
-				virtual void onDetach(node* node, list* list) = 0;
-
-				void onAttach(o1::d_linked::node* node, list* list) override {
-					onAttach(dynamic_cast<o1::d_linked::node_t<T>>(node), list);
-				}
-
-				void onDetach(o1::d_linked::node* node, list* list) override {
-					onDetach(dynamic_cast<o1::d_linked::node_t<T>>(node), list);
-				}
-			};
+			using EventHandlers = o1::AdaptedContainerEventHandlers<
+				o1::d_linked::list::node,
+				o1::d_linked::list,
+				node_t,
+				list_t
+			>;
 
 		private:
 			getNodeFn getNode{nullptr};

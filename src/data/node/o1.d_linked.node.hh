@@ -36,6 +36,8 @@
 #define O1CPPLIB_O1_D_LINKED_NODE_HH
 
 #include <memory>
+#include <utility>
+#include "../o1.event_handlers.hh"
 
 namespace o1 {
 
@@ -47,18 +49,18 @@ namespace o1 {
 		class node {
 
 		public:
-			class EventHandlers {
-			public:
-				virtual void onAttach(node*) = 0;
-				virtual void onDetach(node*) = 0;
-			};
+			using EventHandlers = o1::NodeEventHandlers<node>;
 
 		private:
 			node* _next = nullptr;
 			node* _prev = nullptr;
+			/**
+			 * We use a shared_ptr to keep list move constructor fast
+			 * (so we avoid changing it in all nodes).
+			 */
 			std::shared_ptr<EventHandlers> _handlers = nullptr;
-			void _push_back(node* node);
-			void _onAttach(node* node);
+
+			void _push_back(node* next);
 
 		public:
 			node();
@@ -75,7 +77,7 @@ namespace o1 {
 			node(node&& that) noexcept;
 
 			inline node* eventHandlers(std::shared_ptr<EventHandlers> handlers) {
-				_handlers = handlers;
+				_handlers = std::move(handlers);
 				return this;
 			}
 
