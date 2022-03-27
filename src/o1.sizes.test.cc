@@ -65,7 +65,7 @@ namespace {
 
 	template <int* p>
 	class T1 {
-		int x;
+		int x{0};
 	public:
 		void f() { }
 	};
@@ -104,6 +104,11 @@ namespace {
 		SHOW(sizeof(T<W>));
 		SHOW(sizeof(T1<nullptr>));
 		SHOW(sizeof(T1<&x>));
+
+		T1<nullptr> t1_null;
+		T1<&x> t1_x;
+		SHOW(sizeof(t1_null));
+		SHOW(sizeof(t1_x));
 		SHOW(&T1<nullptr>::f);
 		SHOW(&T1<&x>::f);
 	}
