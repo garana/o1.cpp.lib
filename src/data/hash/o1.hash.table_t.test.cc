@@ -120,4 +120,19 @@ namespace {
 
 	}
 
+	TEST(o1_hash_table, SizeConsistency) {
+		o1::hash::table<Key, Value, &_hash_ops> table;
+		EXPECT_EQ(table.size(), 0);
+
+		{
+			HashNode node{8};
+			table.insert(&node);
+			EXPECT_FALSE(table.empty());
+			EXPECT_EQ(table.size(), 1);
+		}
+
+		EXPECT_TRUE(table.empty());
+		EXPECT_EQ(table.size(), 0);
+	}
+
 }
