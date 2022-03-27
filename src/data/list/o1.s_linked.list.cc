@@ -81,7 +81,8 @@ list::pop_front() {
 	if (retVal != nullptr) {
 		_head.next(_head.next()->next());
 		retVal->next(nullptr);
-		--_size;
+		if (--_size == 0)
+			_tail = &_head;
 		return retVal;
 	}
 
