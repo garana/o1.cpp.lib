@@ -83,3 +83,33 @@ node* list::pop_back() {
 	return nullptr;
 }
 
+list::NodeEventHandlers::NodeEventHandlers(list* list):
+	_list(list) {
+}
+
+void list::NodeEventHandlers::setList(list* newList) {
+	_list = newList;
+}
+
+void list::NodeEventHandlers::attaching(node* node) {
+	if (_list && _list->_listEventHandlers)
+		_list->_listEventHandlers->attaching(node, _list);
+}
+
+void list::NodeEventHandlers::attached(node* node) {
+	_list->_numElements++;
+	if (_list && _list->_listEventHandlers)
+		_list->_listEventHandlers->attached(node, _list);
+}
+
+void list::NodeEventHandlers::detaching(node* node) {
+	if (_list && _list->_listEventHandlers)
+		_list->_listEventHandlers->detaching(node, _list);
+}
+
+void list::NodeEventHandlers::detached(node* node) {
+	_list->_numElements--;
+	if (_list && _list->_listEventHandlers)
+		_list->_listEventHandlers->detached(node, _list);
+}
+

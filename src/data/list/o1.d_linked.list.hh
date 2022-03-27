@@ -73,33 +73,17 @@ namespace o1 {
 				list* _list{nullptr};
 				friend list;
 			public:
-				explicit NodeEventHandlers(list* list): _list(list) { }
+				explicit NodeEventHandlers(list* list);
 
-				void setList(list* newList) {
-					_list = newList;
-				}
+				void setList(list* newList);
 
-				void attaching(node* node) override {
-					if (_list && _list->_listEventHandlers)
-						_list->_listEventHandlers->attaching(node, _list);
-				}
+				void attaching(node* node) override;
 
-				void attached(node* node) override {
-					_list->_numElements++;
-					if (_list && _list->_listEventHandlers)
-						_list->_listEventHandlers->attached(node, _list);
-				}
+				void attached(node* node) override;
 
-				void detaching(node* node) override {
-					if (_list && _list->_listEventHandlers)
-						_list->_listEventHandlers->detaching(node, _list);
-				}
+				void detaching(node* node) override;
 
-				void detached(node* node) override {
-					_list->_numElements--;
-					if (_list && _list->_listEventHandlers)
-						_list->_listEventHandlers->detached(node, _list);
-				}
+				void detached(node* node) override;
 			};
 
 			size_t _numElements{0};
