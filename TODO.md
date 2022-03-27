@@ -1,7 +1,5 @@
 
-* TODO list, queue, stack w/ size count.
-  * TODO d_linked list, queue & stack: onDetach functor.
-  * TODO same for hash table.
+* TODO better organization of internal & public header files.
 * TODO unify containers with a template implementing all operations,
   type-free.
 * TODO add histogram
