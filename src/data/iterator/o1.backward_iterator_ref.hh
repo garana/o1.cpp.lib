@@ -66,7 +66,7 @@ namespace o1 {
 		// prefix
 		backward_iterator_ref<Node,Ref> operator++() {
 			if (this->_node != nullptr)
-				this->_node = static_cast<Node*>(this->_node->prev());
+				this->_node = dynamic_cast<Node*>(this->_node->prev());
 			return backward_iterator_ref<Node,Ref>(this->_node);
 		}
 

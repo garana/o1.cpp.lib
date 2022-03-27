@@ -66,7 +66,7 @@ namespace o1 {
 		// prefix
 		forward_iterator_ref<Node,Ref> operator++() {
 			if (this->_node != nullptr)
-				this->_node = static_cast<Node*>(this->_node->next());
+				this->_node = dynamic_cast<Node*>(this->_node->next());
 			return forward_iterator_ref<Node,Ref>(this->_node);
 		}
 
