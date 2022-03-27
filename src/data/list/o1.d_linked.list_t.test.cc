@@ -38,12 +38,12 @@ namespace {
 
 	struct MyNode {
 		int value{};
-		o1::d_linked::list_t<MyNode>::node node;
+		o1::d_linked::list_t<MyNode>::node_t node;
 
 		MyNode() : node(this) {};
 	};
 
-	o1::d_linked::list_t<MyNode>::node* getNode(MyNode* datum) {
+	o1::d_linked::list_t<MyNode>::node_t* getNode(MyNode* datum) {
 		return &datum->node;
 	}
 
