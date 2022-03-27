@@ -163,4 +163,19 @@ namespace {
 
 	}
 
+	TEST(o1_d_linked_t, SizeConsistency) {
+		list_t list(getNode);
+		EXPECT_EQ(list.size(), 0);
+
+		{
+			MyNode node;
+			list.push_back(&node);
+			EXPECT_FALSE(list.empty());
+			EXPECT_EQ(list.size(), 1);
+		}
+
+		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
+	}
+
 }

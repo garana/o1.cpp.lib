@@ -263,4 +263,20 @@ namespace {
 
 	}
 
+
+	TEST(o1_d_linked, SizeConsistency) {
+		o1::d_linked::list list;
+		EXPECT_EQ(list.size(), 0);
+
+		{
+			o1::d_linked::node node;
+			list.push_back(&node);
+			EXPECT_FALSE(list.empty());
+			EXPECT_EQ(list.size(), 1);
+		}
+
+		EXPECT_TRUE(list.empty());
+		EXPECT_EQ(list.size(), 0);
+	}
+
 }
