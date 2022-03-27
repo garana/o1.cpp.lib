@@ -280,6 +280,9 @@ std::string o1::demangle(const std::string& s) {
 		&status
 	);
 
+	if (!result_c_str)
+		return s;
+
 	std::string result{result_c_str};
 
 	free(result_c_str);

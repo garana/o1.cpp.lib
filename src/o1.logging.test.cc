@@ -38,8 +38,10 @@
 namespace {
 
 	TEST(o1_logging, demangle) {
-		EXPECT_EQ(o1::demangle("a"), "a");
-		EXPECT_EQ(o1::demangle("N12_GLOBAL__N_13ObjE"), "Obj");
+		EXPECT_EQ(o1::demangle("a"), "signed char");
+		EXPECT_EQ(o1::demangle("b"), "bool");
+		EXPECT_EQ(o1::demangle("asdf"), "asdf");
+		EXPECT_EQ(o1::demangle("N12_GLOBAL__N_13ObjE"), "(anonymous namespace)::Obj");
 	}
 
 }
