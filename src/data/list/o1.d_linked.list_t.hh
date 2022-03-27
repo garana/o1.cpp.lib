@@ -64,7 +64,10 @@ namespace o1 {
 
 			list_t() = delete;
 
-			explicit list_t(getNodeFn _getNode) : getNode(_getNode) {}
+			explicit list_t(getNodeFn _getNode):
+				getNode(_getNode) {
+			}
+
 			list_t(getNodeFn _getNode, EventHandlers* _handlers):
 				list(_handlers),
 				getNode(_getNode) {
