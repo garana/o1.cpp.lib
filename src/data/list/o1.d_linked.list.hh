@@ -136,7 +136,7 @@ namespace o1 {
 			 * First node of the list.
 			 * @return the first node of the list, or finish() if it's empty.
 			 */
-			inline node* start() { return _node.next(); }
+			[[nodiscard]] inline node* start() { return _node.next(); }
 
 			/**
 			 * Last element of the list.
