@@ -37,6 +37,12 @@ using o1::d_linked::list;
 using node = o1::d_linked::list::node;
 
 
+void o1::d_linked::list::_quick_move_to(list* list) {
+	_nodeEventHandlers->setList(list);
+	_nodeEventHandlers = std::make_shared<NodeEventHandlers>(this);
+	_node.reset(_nodeEventHandlers);
+}
+
 list::list(list::EventHandlers* handlers):
 	_listEventHandlers(handlers) {
 }
@@ -46,8 +52,11 @@ list::list(list&& that) noexcept:
 	_listEventHandlers(that._listEventHandlers),
 	_node(std::move(that._node)) {
 	that._numElements = 0;
-	_node.eventHandlers(_nodeEventHandlers);
-	that._shiftNodeEventHandlersList(this);
+	that._quick_move_to(this);
+}
+
+void list::flush() {
+	_quick_move_to(nullptr);
 }
 
 node*

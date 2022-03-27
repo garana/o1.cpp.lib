@@ -48,12 +48,44 @@ namespace o1 {
 		public:
 			node_t() = delete;
 			explicit node_t(T* ref): o1::node_t<T>(ref) { }
-			~node_t() = default;
+			~node_t() override = default;
 
 			/**
 			 * Given the datum object, return the o1::d_linked::node_t<T>.
 			 */
 			using getNodeFn = node_t<T>* (*)(T* obj);
+
+//			using o1::d_linked::node::detach;
+//			using o1::d_linked::node::empty;
+//			using o1::d_linked::node::push_back;
+//			using o1::d_linked::node::push_front;
+//
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "HidingNonVirtualFunction"
+//			[[nodiscard]] inline const node_t* next() const {
+//				return dynamic_cast<const node_t<T>*>(
+//					d_linked::node::next()
+//				);
+//			}
+//
+//			[[nodiscard]] inline node_t* next() {
+//				return dynamic_cast<node_t<T>*>(
+//					d_linked::node::next()
+//				);
+//			}
+//
+//			[[nodiscard]] inline const node_t* prev() const {
+//				return dynamic_cast<const node_t<T>*>(
+//					d_linked::node::prev()
+//				);
+//			}
+//
+//			[[nodiscard]] inline node_t* prev() {
+//				return dynamic_cast<node_t<T>*>(
+//					d_linked::node::prev()
+//				);
+//			}
+//#pragma clang diagnostic pop
 
 		};
 

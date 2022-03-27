@@ -43,8 +43,8 @@ namespace o1 {
 
 	namespace d_linked {
 
-		template<typename T>
-		class list_t : protected o1::d_linked::list {
+		template <typename T>
+		class list_t: public o1::d_linked::list {
 
 		public:
 
@@ -81,38 +81,46 @@ namespace o1 {
 				that.getNode = nullptr;
 			}
 
-			~list_t() = default;
+			~list_t() override = default;
 
-			o1::forward_iterator_ref<node, T> begin() {
-				return o1::forward_iterator_ref<node, T>(
-					static_cast<node_t<T>*>(
-						list::start()
-					)
-				);
+			/**
+			 * Remove all nodes from the list, deleting the elements.
+			 */
+			void clear() {
+				while (auto element = pop_front())
+					delete element;
 			}
 
-			o1::forward_iterator_ref<node, T> end() {
-				return o1::forward_iterator_ref<node, T>(
-					static_cast<node_t<T>*>(
-						list::finish()
-					)
-				);
+			node_t* start() {
+				return dynamic_cast<node_t*>(this->d_linked::list::start());
 			}
 
-			o1::backward_iterator_ref<node, T> rbegin() {
-				return o1::backward_iterator_ref<node, T>(
-					static_cast<node_t<T>*>(
-						list::r_start()
-					)
-				);
+			const node_t* start() const {
+				return dynamic_cast<const node_t*>(this->d_linked::list::start());
 			}
 
-			o1::backward_iterator_ref<node, T> rend() {
-				return o1::backward_iterator_ref<node, T>(
-					static_cast<node_t<T>*>(
-						list::finish()
-					)
-				);
+			node_t* r_start() {
+				return dynamic_cast<node_t*>(this->d_linked::list::r_start());
+			}
+
+			const node_t* r_start() const {
+				return dynamic_cast<const node_t*>(this->d_linked::list::r_start());
+			}
+
+			o1::forward_iterator_ref<node_t, T> begin() {
+				return o1::forward_iterator_ref<node_t, T>(start());
+			}
+
+			o1::forward_iterator_ref<node_t, T> end() {
+				return o1::forward_iterator_ref<node_t, T>(nullptr);
+			}
+
+			o1::backward_iterator_ref<node_t, T> rbegin() {
+				return o1::backward_iterator_ref<node_t, T>(r_start());
+			}
+
+			o1::backward_iterator_ref<node_t, T> rend() {
+				return o1::backward_iterator_ref<node_t, T>(nullptr);
 			}
 
 			using d_linked::list::empty;
@@ -142,8 +150,8 @@ namespace o1 {
 			 * @return the removed element from the end of the list; or nullptr if it's empty.
 			 */
 			T* pop_back() {
-				return node_t<T>::ref(
-					static_cast<node_t<T>*>(d_linked::list::pop_back())
+				return node_t::ref(
+					static_cast<node_t*>(d_linked::list::pop_back())
 				);
 			}
 
@@ -153,8 +161,8 @@ namespace o1 {
 			 * @return the removed element from the head of the list, or nullptr if it's empty.
 			 */
 			T* pop_front() {
-				return node_t<T>::ref(
-					static_cast<node_t<T>*>(d_linked::list::pop_front())
+				return node_t::ref(
+					static_cast<node_t*>(d_linked::list::pop_front())
 				);
 			}
 

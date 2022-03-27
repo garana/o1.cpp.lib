@@ -95,7 +95,6 @@ node::_push_back(node* node) {
 	node->_next = this;
 }
 
-
 void
 node::push_back(node* node) {
 	if (o1::flags::extended_checks()) {
@@ -148,4 +147,9 @@ bool node::empty() const {
 		);
 	}
 	return _next == this;
+}
+
+void node::reset(std::shared_ptr<EventHandlers> handlers) {
+	_handlers = std::move(handlers);
+	_next = _prev = this;
 }

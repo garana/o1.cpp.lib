@@ -64,7 +64,7 @@ namespace o1 {
 
 		private:
 
-			node _head;
+			node _head; // TODO make this a node*.
 			node* _tail;
 			size_t _size{0};
 
@@ -80,6 +80,21 @@ namespace o1 {
 			 * Nodes with destructor called before the list is destroyed lead to a corrupt list.
 			 */
 			~list() = default;
+
+			/**
+			 * Remove all nodes from the list, deleting the elements.
+			 */
+			void clear() {
+				while (auto element = pop_front())
+					delete element;
+			}
+
+			/**
+			 * Remove all nodes from the list, NOT deleting them.
+			 */
+			void flush() {
+				while (auto element = pop_front());
+			}
 
 			[[nodiscard]] const node* start() const { return _head.next(); }
 

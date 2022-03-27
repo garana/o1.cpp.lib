@@ -43,8 +43,6 @@ namespace o1 {
 
 	namespace d_linked {
 
-		class node;
-
 		// TODO documentation
 		class node {
 
@@ -55,8 +53,8 @@ namespace o1 {
 			node* _next = nullptr;
 			node* _prev = nullptr;
 			/**
-			 * We use a shared_ptr to keep list move constructor fast
-			 * (so we avoid changing it in all nodes).
+			 * We use a shared_ptr to keep list move constructor & list flush
+			 * fast (so we avoid changing it in all nodes).
 			 */
 			std::shared_ptr<EventHandlers> _handlers = nullptr;
 
@@ -76,15 +74,13 @@ namespace o1 {
 			 */
 			node(node&& that) noexcept;
 
-			inline node* eventHandlers(std::shared_ptr<EventHandlers> handlers) {
-				_handlers = std::move(handlers);
-				return this;
-			}
+			void reset(std::shared_ptr<EventHandlers> handlers);
 
 			/**
 			 * Detach this node on destructor.
+			 * Destructor is virtual, so this can be dynamic casted to subclasses.
 			 */
-			~node() { detach(); }
+			virtual ~node() { detach(); }
 
 			void detach();
 

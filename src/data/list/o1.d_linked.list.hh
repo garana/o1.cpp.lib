@@ -71,7 +71,6 @@ namespace o1 {
 
 			class NodeEventHandlers: public node::EventHandlers {
 				list* _list{nullptr};
-				//friend list::list(list&& that);
 				friend list;
 			public:
 				explicit NodeEventHandlers(list* list): _list(list) { }
@@ -81,24 +80,24 @@ namespace o1 {
 				}
 
 				void attaching(node* node) override {
-					if (_list->_listEventHandlers)
+					if (_list && _list->_listEventHandlers)
 						_list->_listEventHandlers->attaching(node, _list);
 				}
 
 				void attached(node* node) override {
 					_list->_numElements++;
-					if (_list->_listEventHandlers)
+					if (_list && _list->_listEventHandlers)
 						_list->_listEventHandlers->attached(node, _list);
 				}
 
 				void detaching(node* node) override {
-					if (_list->_listEventHandlers)
+					if (_list && _list->_listEventHandlers)
 						_list->_listEventHandlers->detaching(node, _list);
 				}
 
 				void detached(node* node) override {
 					_list->_numElements--;
-					if (_list->_listEventHandlers)
+					if (_list && _list->_listEventHandlers)
 						_list->_listEventHandlers->detached(node, _list);
 				}
 			};
@@ -110,11 +109,7 @@ namespace o1 {
 			};
 			node _node{_nodeEventHandlers};
 
-			void _shiftNodeEventHandlersList(list* list) {
-				_nodeEventHandlers->setList(list);
-				_nodeEventHandlers = std::make_shared<NodeEventHandlers>(this);
-				_node.eventHandlers(_nodeEventHandlers);
-			}
+			void _quick_move_to(list* list);
 
 		public:
 			list() = default;
@@ -126,10 +121,15 @@ namespace o1 {
 			list(list&& that) noexcept;
 
 			/**
+			 * Remove all nodes from the list, NOT deleting them.
+			 */
+			void flush();
+
+			/**
 			 * Upon destruction, entries are NOT deleted.
 			 * They'll form a  double linked list on their own.
 			 */
-			~list() = default;
+			virtual ~list() = default;
 
 			/**
 			 * First node of the list.
