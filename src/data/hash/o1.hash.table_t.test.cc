@@ -39,14 +39,14 @@ namespace {
 	struct HashNode {
 		int key;
 
-		mutable o1::hash::list_t<HashNode>::node hash_node;
+		mutable o1::hash::node_t<HashNode> hash_node;
 
 		explicit HashNode(int _key) : key(_key), hash_node(this) {}
 	};
 
 	using Key = decltype(HashNode::key);
 	using Value = HashNode;
-	using node = typename o1::hash::list_t<Value>::node;
+	using node_t = typename o1::hash::node_t<Value>;
 
 	o1::hash::hash_val hashFn(const Key& key) {
 		return o1::hash::hashValue(&key, sizeof(key), 0);
@@ -56,7 +56,7 @@ namespace {
 		return value->key;
 	}
 
-	node* getNode(Value* value) {
+	node_t* getNode(Value* value) {
 		return &value->hash_node;
 	}
 

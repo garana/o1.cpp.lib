@@ -44,11 +44,12 @@ namespace o1 {
 	namespace hash {
 
 		using hash_val = uint32_t;
+
 		template <typename Value>
 		using list_t = o1::d_linked::list_t<Value>;
 
 		template <typename Value>
-		using node = typename list_t<Value>::node;
+		using node_t = typename list_t<Value>::node_t;
 
 		hash_val hashValue(const void* buf, size_t length, hash_val previousValue = 0);
 
@@ -60,7 +61,7 @@ namespace o1 {
 			typedef const Key getKeyFn(const Value* value);
 			getKeyFn* getKey;
 
-			typedef typename o1::hash::list_t<Value>::node* getNodeFn(Value* value);
+			typedef node_t<Value>* getNodeFn(Value* value);
 			getNodeFn* getNode;
 
 			typedef bool equalFn(const Key& left, const Key& right);
