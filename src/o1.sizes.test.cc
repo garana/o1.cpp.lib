@@ -58,6 +58,20 @@ namespace {
 		~W() override = default;
 	};
 
+	template <class A>
+	class T {
+		int x;
+	};
+
+	template <int* p>
+	class T1 {
+		int x;
+	public:
+		void f() { }
+	};
+
+	int x;
+
 	TEST(print, size_of) {
 		SHOW(sizeof(int));
 		SHOW(sizeof(long));
@@ -84,6 +98,14 @@ namespace {
 		SHOW(sizeof(D));
 		SHOW(sizeof(V));
 		SHOW(sizeof(W));
+		SHOW(sizeof(T<C>));
+		SHOW(sizeof(T<D>));
+		SHOW(sizeof(T<V>));
+		SHOW(sizeof(T<W>));
+		SHOW(sizeof(T1<nullptr>));
+		SHOW(sizeof(T1<&x>));
+		SHOW(&T1<nullptr>::f);
+		SHOW(&T1<&x>::f);
 	}
 
 }
