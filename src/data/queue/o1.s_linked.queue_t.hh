@@ -69,6 +69,7 @@ namespace o1 {
 			~queue_t() = default;
 
 			using s_linked::queue::empty;
+			using s_linked::queue::size;
 
 			/**
 			 * "Alias" of queue::push(node).

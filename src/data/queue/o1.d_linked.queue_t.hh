@@ -70,7 +70,7 @@ namespace o1 {
 			~queue_t() = default;
 
 			using d_linked::queue::empty;
-			using d_linked::list::size;
+			using d_linked::queue::size;
 
 			/**
 			 * "Alias" of queue::push(node).

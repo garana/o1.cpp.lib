@@ -71,6 +71,7 @@ namespace o1 {
 			~queue() = default;
 
 			using o1::d_linked::list::empty;
+			using o1::d_linked::list::size;
 
 			/**
 			 * Push the @param node to the end of the queue.

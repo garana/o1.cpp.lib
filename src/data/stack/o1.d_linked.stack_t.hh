@@ -70,7 +70,7 @@ namespace o1 {
 			~stack_t() = default;
 
 			using d_linked::stack::empty;
-			using d_linked::list::size;
+			using d_linked::stack::size;
 
 			/**
 			 * "Alias" of stack::push(node).

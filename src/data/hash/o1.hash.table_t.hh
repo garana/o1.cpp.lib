@@ -143,6 +143,8 @@ namespace o1 {
 
 			size_t size() const { return _elements.size(); }
 
+			bool empty() const { return _elements.empty(); }
+
 			bool insert(Value* value) {
 				auto key = ops->getKey(value);
 				hash_val hashValue = ops->hashValue(key);
