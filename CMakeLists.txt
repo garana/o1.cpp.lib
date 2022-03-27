@@ -102,7 +102,7 @@ add_library(o1cpp
 		src/memory/pool/o1.memory.pool.metrics.cc
 		src/memory/pool/o1.memory.pool.metrics.hh
 
-)
+		src/data/hash/o1.hash.node_t.hh)
 
 install(TARGETS o1cpp DESTINATION lib/${PROJECT_NAME})
 

@@ -66,12 +66,11 @@ namespace o1 {
 
 			sizing_strategy sizingStrategy;
 
-			/**
-			 * Number of elements.
-			 * May not be accurate if a node gets detached on it's own.
-			 * Gets updated on hash hash slot traversal.
-			 */
-			size_t numElements{0};
+			static o1::d_linked::node_t<Value>*
+			getElementsNode(Value* obj) {
+				return ops->getElementsNode(obj);
+			}
+			o1::hash::list_t<Value> _elements;
 
 			/**
 			 * Slots vector, an array of bucket vectors, each of different
@@ -94,7 +93,7 @@ namespace o1 {
 
 			void rehash(hash_val hashValue) {
 
-				currentSlot = sizingStrategy.sizeIndex(currentSlot, numElements);
+				currentSlot = sizingStrategy.sizeIndex(currentSlot, _elements.size());
 
 				if (slots == nullptr)
 					slots = new buckets_t*[sizingStrategy.maxSizingIndex() + 1]{nullptr};
@@ -126,7 +125,8 @@ namespace o1 {
 
 		public:
 			table():
-				sizingStrategy() {
+				sizingStrategy(),
+				_elements(getElementsNode) {
 			}
 
 			/**
@@ -141,13 +141,15 @@ namespace o1 {
 				clear();
 			}
 
+			size_t size() const { return _elements.size(); }
+
 			bool insert(Value* value) {
 				auto key = ops->getKey(value);
 				hash_val hashValue = ops->hashValue(key);
 				rehash(hashValue);
 				auto retVal = getCurrentSlot()->insert(key, hashValue, value);
 				if (retVal)
-					++numElements;
+					_elements.push_back(value);
 				return retVal;
 			}
 
@@ -164,7 +166,7 @@ namespace o1 {
 				rehash(hashValue);
 				auto retVal = getCurrentSlot()->set(key, hashValue, value, old_value);
 				if (retVal)
-					++numElements;
+					_elements.push_back(value);
 				return retVal;
 			}
 
@@ -175,10 +177,18 @@ namespace o1 {
 			 * @returntrue if the entry was found and replaced.
 			 */
 			bool replace(Value* value, Value** old_value = nullptr) {
+				Value* _old_value = nullptr;
 				auto key = ops->getKey(value);
 				hash_val hashValue = ops->hashValue(key);
 				rehash(hashValue);
-				return getCurrentSlot()->replace(key, hashValue, value, old_value);
+				auto retVal = getCurrentSlot()->replace(key, hashValue, value, &_old_value);
+				if (retVal) {
+					ops->getElementsNode(_old_value)->detach();
+					_elements.push_back(value);
+					if (old_value != nullptr)
+						*old_value = _old_value;
+				}
+				return retVal;
 			}
 
 			/**
@@ -192,11 +202,15 @@ namespace o1 {
 			}
 
 			bool remove(const Key& key, Value** old_value = nullptr) {
+				Value* _old_value = nullptr;
 				hash_val hashValue = ops->hashValue(key);
 				rehash(hashValue);
-				auto retVal = getCurrentSlot()->remove(key, hashValue, old_value);
-				if (retVal)
-					--numElements;
+				auto retVal = getCurrentSlot()->remove(key, hashValue, &_old_value);
+				if (retVal) {
+					ops->getElementsNode(_old_value)->detach();
+					if (old_value != nullptr)
+						*old_value = _old_value;
+				}
 				return retVal;
 			}
 
@@ -216,7 +230,11 @@ namespace o1 {
 				}
 				delete[] slots;
 				currentSlot = 0;
-				numElements = 0;
+			}
+
+			const o1::hash::list_t<Value>&
+			elements() {
+				return _elements;
 			}
 
 		};

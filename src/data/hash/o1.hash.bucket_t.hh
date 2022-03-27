@@ -57,6 +57,12 @@ namespace o1 {
 		public:
 
 		private:
+
+			static o1::d_linked::node_t<Value>*
+			getBucketNode(Value* obj) {
+				return ops->getNode(obj)->getBucketNode();
+			}
+
 			o1::hash::list_t<Value> nodes;
 
 		protected:
@@ -69,7 +75,7 @@ namespace o1 {
 			}
 
 		public:
-			bucket_t(): nodes(ops->getNode) { };
+			bucket_t(): nodes(getBucketNode) { };
 
 			bucket_t(const bucket_t& that) = delete;
 
@@ -158,7 +164,7 @@ namespace o1 {
 					if (ops->equal(key, ops->getKey(i))) {
 						if (old_value != nullptr)
 							*old_value = i;
-						ops->getNode(i)->detach(); // TODO "embedded" flag
+						getBucketNode(i)->detach(); // TODO "embedded" flag
 						return true;
 					}
 				}

@@ -38,6 +38,7 @@
 #include <cstdint>
 #include <cstddef>
 #include "../list/o1.d_linked.list_t.hh"
+#include "./o1.hash.node_t.hh"
 
 namespace o1 {
 
@@ -47,9 +48,6 @@ namespace o1 {
 
 		template <typename Value>
 		using list_t = o1::d_linked::list_t<Value>;
-
-		template <typename Value>
-		using node_t = typename list_t<Value>::node_t;
 
 		hash_val hashValue(const void* buf, size_t length, hash_val previousValue = 0);
 
@@ -66,6 +64,16 @@ namespace o1 {
 
 			typedef bool equalFn(const Key& left, const Key& right);
 			equalFn* equal;
+
+			o1::d_linked::node_t<Value>*
+			getBucketNode(Value* obj) {
+				return getNode(obj)->getBucketNode();
+			}
+
+			o1::d_linked::node_t<Value>*
+			getElementsNode(Value* obj) {
+				return getNode(obj)->getElementsNode();
+			}
 
 		};
 

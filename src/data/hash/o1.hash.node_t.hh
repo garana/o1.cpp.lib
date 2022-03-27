@@ -32,46 +32,40 @@
  */
 
 
-#ifndef O1CPPLIB_O1_ITERATOR_HH
-#define O1CPPLIB_O1_ITERATOR_HH
+#ifndef O1CPPLIB_O1_HASH_NODE_T_HH
+#define O1CPPLIB_O1_HASH_NODE_T_HH
 
-#include <type_traits>
+
+#include "../node/o1.d_linked.node_t.hh"
 
 namespace o1 {
 
-	template <typename Node>
-	class iterator {
-	protected:
-		Node* _node{nullptr};
+	namespace hash {
 
-	public:
-		explicit iterator(Node* node): _node(node) {}
+		template <typename T>
+		class node_t {
+			o1::d_linked::node_t<T> _bucket_node{nullptr};
+			o1::d_linked::node_t<T> _elements_node{nullptr};
 
-		iterator(const iterator<Node>& that) = default;
+		public:
+			node_t() = delete;
 
-		iterator(iterator<Node>&& that) noexcept :
-			_node(that._node) {
-			that._node = nullptr;
-		}
+			explicit node_t(T* obj):
+				_bucket_node(obj),
+				_elements_node(obj) {
+			}
 
-		[[nodiscard]] Node* operator*() {
-			return _node;
-		}
+			o1::d_linked::node_t<T>* getBucketNode() {
+				return &_bucket_node;
+			}
 
-		[[nodiscard]] inline const Node* operator*() const {
-			return _node;
-		}
+			o1::d_linked::node_t<T>* getElementsNode() {
+				return &_elements_node;
+			}
 
-		bool operator == (const iterator<Node>& that) const {
-			return _node == that._node;
-		}
-
-		bool operator != (const iterator<Node>& that) const {
-			return _node != that._node;
-		}
-
-	};
+		};
+	}
 
 }
 
-#endif //O1CPPLIB_O1_ITERATOR_HH
+#endif //O1CPPLIB_O1_HASH_NODE_T_HH

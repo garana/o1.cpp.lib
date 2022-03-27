@@ -33,6 +33,7 @@
 
 #include <gtest/gtest.h>
 #include "o1.hash.table_t.hh"
+#include "o1.hash.node_t.hh"
 
 namespace {
 
