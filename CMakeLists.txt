@@ -61,7 +61,6 @@ add_library(o1cpp
 		src/o1.promise.hh
 		src/o1.property.hh
 		src/o1.range.hh
-		src/o1.shared_ptr.hh
 		src/o1.string.cc
 		src/o1.string.hh
 		src/o1.time.cc
