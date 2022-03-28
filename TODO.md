@@ -11,3 +11,4 @@
     hence no need for EventHandlers.
   * d_linked::node: how to avoid ref() additional pointer, w/out requiring
     standard layout.
+* TODO Reduce object code size (templates).
