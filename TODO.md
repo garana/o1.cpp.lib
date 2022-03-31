@@ -1,7 +1,7 @@
 
-* TODO better organization of internal & public header files.
+* TODO better organization of internal & public header files?
 * TODO unify containers with a template implementing all operations,
-  type-free.
+       type-free, to reduce object code size.
 * TODO add histogram
 * TODO add runtimeMetrics
 * TODO move _ops in data/* to a constructor arg?
@@ -11,4 +11,3 @@
     hence no need for EventHandlers.
   * d_linked::node: how to avoid ref() additional pointer, w/out requiring
     standard layout.
-* TODO Reduce object code size (templates).
