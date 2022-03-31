@@ -40,6 +40,10 @@
 
 namespace o1 {
 
+	/**
+	 * Defines a range [from,to)
+	 * @tparam T
+	 */
 	template <typename T>
 	class range {
 		static_assert(
@@ -65,18 +69,56 @@ namespace o1 {
 
 		T span() const { return _stop - _start; }
 
-		bool isInside(T value) { return (_start <= value) && (value < _stop); }
-
-		bool overlaps(const range<T>& that) { // TODO write UTs
-			return isInside(that._start) || isInside(that._stop);
+		bool contains(T value) const {
+			return (_start <= value) && (value <= _stop);
 		}
 
-		struct LT { // TODO review, write UTs
-			bool operator() (const range<T>& left, const range<T>& right) const {
-				return (left._stop <= right._start);
-//				return (left._start < right._start);
-			}
-		};
+		bool isInside(T value) const {
+			return (_start < value) && (value < _stop);
+		}
+
+		/**
+		 * Return "x", forcing it to be inside [start, stop]:
+		 * - If it's smaller than start, returns start.
+		 * - If it's bigger than stop, returns stop.
+		 */
+		T clamp(T x) const { return std::max(std::min(x, _stop), _start); }
+
+		/**
+		 * Given x, return the mapped value in [0,1].
+		 */
+		double to01(T x) const { return (x - _start) / (_stop - _start); }
+
+		/**
+		 * Given x in [0,1], return the value in the range.
+		 * @param x
+		 * @return
+		 */
+		T from01(double x) const { return x * (_stop - _start) + _start; }
+
+		/**
+		 * Map the value x into the new range [min,max]
+		 * @param that the new range, where x is mapped into
+		 * @param x value to map
+		 * @return corresponding value in "that" range.
+		 */
+		T map(const range<T>& that, T x) const {
+			return that.from01(to01(x));
+		}
+
+		/**
+		 * Map the value x into the new range [0,max]
+		 * @param that the new range, where x is mapped into
+		 * @param x value to map
+		 * @return corresponding value in "that" range.
+		 */
+		T map(T max, T x) const {
+			return to01(x) * max;
+		}
+
+		bool overlaps(const range<T>& that) const {
+			return isInside(that._start) || isInside(that._stop);
+		}
 
 	};
 

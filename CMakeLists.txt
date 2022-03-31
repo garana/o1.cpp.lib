@@ -184,7 +184,8 @@ add_executable(o1cpp_test
 		src/data/hash/o1.hash.table_t.test.cc
 		src/o1.changelog.test.cc
 		src/o1.logging.test.cc
-)
+		src/o1.range.test.cc
+		)
 
 target_link_libraries(o1cpp_test gtest_main o1cpp)
 
